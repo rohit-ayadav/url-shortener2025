@@ -1,101 +1,270 @@
-import Image from "next/image";
+"use client";
+import { useEffect, useState } from 'react';
+import { Toaster, toast } from 'react-hot-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Stats } from '@/components/Stats';
+import Help from '@/components/help/page';
+import { SingleURLTab } from '@/components/SingleURLTab';
+import { MultipleURLsTab } from '@/components/MultipleURLsTab';
+import { TextModeTab } from '@/components/TextModeTab';
+import { ResultCard } from '@/components/ResultCard';
+import { QRCodeModal } from '@/components/QRCodeModal';
+import { ShortenedURL } from '@/types/types';
+import { isValidURL, cleanText } from '@/utils/utils';
+import { useAlias } from '@/hooks/useAlias';
+import { createShortUrl, getStats } from '@/components/createShortUrl';
 
-export default function Home() {
+
+const URLShortener = () => {
+  const [url, setUrl] = useState('');
+  const [urls, setUrls] = useState('');
+  const [text, setText] = useState('');
+  const [processedText, setProcessedText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [shortenedURLs, setShortenedURLs] = useState<ShortenedURL[]>([]);
+  const [showQR, setShowQR] = useState(false);
+  const [selectedURL, setSelectedURL] = useState<string | null>(null);
+  const [totalShortenedUrls, setTotalShortenedUrls] = useState(0);
+  const [totalClicks, setTotalClicks] = useState(0);
+  const { alias, setAlias, aliasError } = useAlias();
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const stats = await getStats();
+      setTotalShortenedUrls(stats.totalShortenedUrls);
+      setTotalClicks(stats.totalClicks);
+    };
+    fetchStats();
+  }, []);
+
+  const handleShortenSingle = async () => {
+    if (!navigator.onLine) {
+      setError('No internet connection');
+      return;
+    }
+    if (!url) {
+      setError('Please enter a URL');
+      toast.error('Please enter a URL');
+      return;
+    }
+    if (!isValidURL(url)) {
+      setError('Please enter a valid URL');
+      toast.error('Please enter a valid URL');
+      return;
+    }
+    if (aliasError) {
+      setError('Please fix the alias error');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const shortened = await createShortUrl(url, alias);
+      setShortenedURLs([{ original: url, shortened }]);
+      setError('');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleShortenMultiple = async () => {
+    if (!urls) {
+      setError('Please enter URLs');
+      toast.error('Please enter URLs');
+      return;
+    }
+    if (!navigator.onLine) {
+      setError('No internet connection');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const urlList = urls.split('\n').filter(u => u.trim());
+      const shortened = await Promise.all(
+        urlList.map(async u => ({
+          original: u,
+          shortened: await createShortUrl(u, '')
+        }))
+      );
+      setShortenedURLs(shortened);
+      setError('');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProcessText = async () => {
+    if (!text) {
+      setError('Please enter text');
+      toast.error('Please enter text');
+      return;
+    }
+    if (!navigator.onLine) {
+      setError('No internet connection');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      let newText = text;
+      const urls = text.match(urlRegex) || [];
+      const shortened = await Promise.all(
+        urls.map(async url => ({
+          original: url,
+          shortened: await createShortUrl(url, '')
+        }))
+      );
+
+      shortened.forEach(({ original, shortened }) => {
+        newText = newText.replace(original, shortened);
+      });
+      await navigator.clipboard.writeText(newText);
+      toast.success('Text processed and copied');
+      setProcessedText(newText);
+      setShortenedURLs(shortened);
+      setError('');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasteClipboard = async () => {
+    const clipboardText = await navigator.clipboard.readText();
+    setText(cleanText(clipboardText));
+    toast.success('Text pasted from clipboard');
+  };
+
+  const handleCopy = async (url: string) => {
+    await navigator.clipboard.writeText(url);
+    toast.success('Copied to clipboard');
+  };
+
+  const handleOpen = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleShare = async (url: string) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ url });
+        toast.success('URL shared successfully');
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    }
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <>
+      <Toaster position="top-right" />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
+        <div className="max-w-3xl mx-auto">
+          <Card className="shadow-lg border-0">
+            <CardHeader className="text-center pb-2">
+              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                URL Shortener
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="single" className="space-y-4">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="single">Single URL</TabsTrigger>
+                  <TabsTrigger value="multiple">Multiple URLs</TabsTrigger>
+                  <TabsTrigger value="text">Text Mode</TabsTrigger>
+                </TabsList>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+                <TabsContent value="single">
+                  <SingleURLTab
+                    url={url}
+                    alias={alias}
+                    aliasError={aliasError}
+                    loading={loading}
+                    onUrlChange={setUrl}
+                    onAliasChange={setAlias}
+                    onShorten={handleShortenSingle}
+                  />
+                </TabsContent>
+
+                <TabsContent value="multiple">
+                  <MultipleURLsTab
+                    urls={urls}
+                    loading={loading}
+                    onUrlsChange={setUrls}
+                    onShorten={handleShortenMultiple}
+                  />
+                </TabsContent>
+
+                <TabsContent value="text">
+                  <TextModeTab
+                    text={text}
+                    processedText={processedText}
+                    loading={loading}
+                    onTextChange={setText}
+                    onProcess={handleProcessText}
+                    onPaste={handlePasteClipboard}
+                    onClear={() => {
+                      setText('');
+                      setProcessedText('');
+                      setShortenedURLs([]);
+                      setError('');
+                    }}
+                    onCopyProcessed={() => handleCopy(processedText)}
+                  />
+                </TabsContent>
+
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+
+                {shortenedURLs.length > 0 && (
+                  <div className="space-y-3 animate-in fade-in-50 duration-500">
+                    {shortenedURLs.map((item, index) => (
+                      <ResultCard
+                        key={index}
+                        item={item}
+                        onShowQR={(url: string) => {
+                          setSelectedURL(url);
+                          setShowQR(true);
+                        }}
+                        onCopy={handleCopy}
+                        onOpen={handleOpen}
+                        onShare={handleShare}
+                      />
+                    ))}
+                  </div>
+                )}
+              </Tabs>
+            </CardContent>
+            <Stats
+              totalShortenedUrls={totalShortenedUrls}
+              totalClicks={totalClicks}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          </Card>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        <Help />
+      </div>
+
+      {showQR && selectedURL && (
+        <QRCodeModal
+          url={selectedURL}
+          onClose={() => setShowQR(false)}
+        />
+      )}
+    </>
   );
-}
+};
+
+export default URLShortener;
