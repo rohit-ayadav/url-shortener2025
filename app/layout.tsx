@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -7,6 +7,7 @@ const geistSans = localFont({
   variable: "--font-geist-sans",
   weight: "100 900",
 });
+
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
@@ -18,11 +19,13 @@ export const metadata: Metadata = {
   description: "A simple URL shortener",
   manifest: "/manifest.json",
   themeColor: "#000000",
-  viewport: "width=device-width, initial-scale=1",
-  
-  
 };
 
+// Separate viewport export
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export default function RootLayout({
   children,
