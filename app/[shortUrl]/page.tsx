@@ -52,13 +52,14 @@ export default async function Preview({
 function removeSpecificQueryString(url: string): string {
   const removableStrings = [
     "?referralCode=JEMO1X",
-    "?utm_source=ResourceAndUpdates&utm_medium=Affiliates&utm_campaign=XZN12012025&ref=AffResourceAndUpdates",
-    `?utm_source=ResourceAndUpdates&utm_medium=Affiliates&utm_campaign={optional}&ref=AffResourceAndUpdates`,
+    // "?utm_source=ResourceAndUpdates&utm_medium=Affiliates&utm_campaign=XZN12012025&ref=AffResourceAndUpdates",
+    `?utm_source=ResourceAndUpdates`,
   ];
 
   for (const removable of removableStrings) {
     if (url.includes(removable)) {
-      url = url.replace(removable, "");
+      // then remove the query string from the URL starting from the ?
+      url = url.slice(0, url.indexOf(removable));
     }
   }
 
