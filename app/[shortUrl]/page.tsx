@@ -1,6 +1,27 @@
+// app/[shortUrl]/page.tsx
 import { PreviewPage } from './PreviewPage';
 import { Url } from "@/models/urlShortener";
 import NotFound from '../not-found';
+import { cache } from 'react';
+
+// Cache the database lookup
+const getUrlEntry = cache(async (shortUrl: string) => {
+  return await Url.findOne({ shortenURL: shortUrl });
+});
+
+// Separate function for updating click count
+const updateClickCount = async (urlEntry: any) => {
+  try {
+    const count = (urlEntry.click as number) + 1;
+    await Url.updateOne(
+      { _id: urlEntry._id },
+      { $set: { click: count } }
+    );
+  } catch (error) {
+    console.error('Error updating click count:', error);
+    // Don't throw error - click count update is non-critical
+  }
+};
 
 function normalizeUrl(url: string): string {
   if (!/^https?:\/\//i.test(url)) {
@@ -9,57 +30,46 @@ function normalizeUrl(url: string): string {
   return url;
 }
 
+function removeSpecificQueryString(url: string): string {
+  const removableStrings = [
+    "?referralCode=JEMO1X",
+    `?utm_source=ResourceAndUpdates`,
+  ];
+  
+  for (const removable of removableStrings) {
+    if (url.includes(removable)) {
+      url = url.slice(0, url.indexOf(removable));
+    }
+  }
+  return url.replace(/[?&]$/, "");
+}
+
 export default async function Preview({
   params
 }: any) {
   try {
-    const urlEntry = await Url.findOne({
-      shortenURL: params.shortUrl,
-    });
-
+    // Use cached database lookup
+    const urlEntry = await getUrlEntry(params.shortUrl);
+    
     if (!urlEntry) {
       return <NotFound />;
     }
 
-    // Increment click count
-    let count: number = urlEntry.click as number;
-    count = count + 1;
-    urlEntry.click = count;
-    await urlEntry.save();
+    // Update click count in background without waiting
+    updateClickCount(urlEntry);
 
     const original = normalizeUrl(urlEntry.originalUrl);
     const duplicate = removeSpecificQueryString(original);
 
-    // Check if direct redirect is requested
-    // if (searchParams.direct === 'true' || searchParams.redirectNow === 'true') {
-    //   return redirect(original);
-    // }
-
     return <PreviewPage originalUrl={original} duplicateUrl={duplicate} />;
+    
   } catch (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <h1 className="text-2xl">An error occurred...</h1>
-        <p className='text-red-500'>{(error as Error).toString()}</p>
+      <div className="min-h-screen flex items-center justify-center flex-col gap-4">
+        <h1 className="text-2xl">An error occurred</h1>
+        <p className="text-red-500">{(error as Error).toString()}</p>
       </div>
     );
   }
 }
 
-
-function removeSpecificQueryString(url: string): string {
-  const removableStrings = [
-    "?referralCode=JEMO1X",
-    // "?utm_source=ResourceAndUpdates&utm_medium=Affiliates&utm_campaign=XZN12012025&ref=AffResourceAndUpdates",
-    `?utm_source=ResourceAndUpdates`,
-  ];
-
-  for (const removable of removableStrings) {
-    if (url.includes(removable)) {
-      // then remove the query string from the URL starting from the ?
-      url = url.slice(0, url.indexOf(removable));
-    }
-  }
-
-  return url.replace(/[?&]$/, "");
-}
