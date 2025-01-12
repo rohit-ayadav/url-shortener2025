@@ -1,9 +1,7 @@
 import { PreviewPage } from './PreviewPage';
-import { redirect } from 'next/navigation'
 import connectDB from "@/utils/db";
 import { Url } from "@/models/urlShortener";
 import { NextResponse } from 'next/server';
-
 
 function normalizeUrl(url: string): string {
   if (!/^https?:\/\//i.test(url)) {
@@ -12,20 +10,11 @@ function normalizeUrl(url: string): string {
   return url;
 }
 
-interface SearchParams {
-  direct?: string;
-  redirectNow?: string;
-}
-
 export default async function Preview({
-  params,
-  searchParams
+  params
 }: {
   params: { shortUrl: string };
-  searchParams: SearchParams;
 }) {
-  await connectDB();
-
   try {
     const urlEntry = await Url.findOne({
       shortenURL: params.shortUrl,
@@ -69,6 +58,7 @@ function removeSpecificQueryString(url: string): string {
   const removableStrings = [
     "?referralCode=JEMO1X",
     "?utm_source=ResourceAndUpdates&utm_medium=Affiliates&utm_campaign=XZN12012025&ref=AffResourceAndUpdates",
+    `?utm_source=ResourceAndUpdates&utm_medium=Affiliates&utm_campaign={optional}&ref=AffResourceAndUpdates`,
   ];
 
   for (const removable of removableStrings) {
