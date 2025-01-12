@@ -2,6 +2,7 @@ import { PreviewPage } from './PreviewPage';
 import connectDB from "@/utils/db";
 import { Url } from "@/models/urlShortener";
 import { NextResponse } from 'next/server';
+import NotFound from '../not-found';
 
 function normalizeUrl(url: string): string {
   if (!/^https?:\/\//i.test(url)) {
@@ -19,11 +20,7 @@ export default async function Preview({
     });
 
     if (!urlEntry) {
-      return (
-        <div className="min-h-screen flex items-center justify-center">
-          <h1 className="text-2xl">Page not found...</h1>
-        </div>
-      );
+      return <NotFound />;
     }
 
     // Increment click count
