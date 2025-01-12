@@ -12,9 +12,7 @@ function normalizeUrl(url: string): string {
 
 export default async function Preview({
   params
-}: {
-  params: { shortUrl: string };
-}) {
+}: any) {
   try {
     const urlEntry = await Url.findOne({
       shortenURL: params.shortUrl,
