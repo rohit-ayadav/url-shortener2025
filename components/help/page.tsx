@@ -1,6 +1,3 @@
-
-
-// src/app/help/page.tsx
 import { useState } from 'react';
 import { FloatingHelpButton } from './FloatingHelpButton';
 import { HelpDialog } from './HelpDialog';

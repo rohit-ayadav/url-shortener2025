@@ -1,5 +1,3 @@
-
-// src/components/url-shortener/Stats.tsx
 interface StatsProps {
   totalShortenedUrls: number;
   totalClicks: number;

@@ -1,4 +1,5 @@
 "use client";
+import React from 'react';
 import { useEffect, useState } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -165,6 +166,21 @@ const URLShortener = () => {
     }
   };
 
+  // Progressive Web App Service Worker Registration
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js?v=1.0.0')
+          .then((registration) => {
+            console.log('Service Worker registered successfully:', registration.scope);
+          })
+          .catch((error) => {
+            console.log('Service Worker registration failed:', error);
+          });
+      });
+    }
+  }, []);
+
   return (
     <>
       <Toaster position="top-right" />
@@ -263,6 +279,7 @@ const URLShortener = () => {
           onClose={() => setShowQR(false)}
         />
       )}
+
     </>
   );
 };

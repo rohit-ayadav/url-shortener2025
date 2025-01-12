@@ -1,8 +1,8 @@
 import toast from 'react-hot-toast';
+import connectDB from '@/utils/db';
+import { Url } from '@/models/urlShortener';
 
-const API_URL = 'https://resourcesandcarrier.online/api/urlshortener';
-// const API_URL = 'http://localhost:3002/api/urlshortener';
-
+connectDB();
 
 const isValidAlias = (alias: string) => {
     const regex = /^[a-zA-Z0-9_-]+$/;
@@ -10,7 +10,6 @@ const isValidAlias = (alias: string) => {
 };
 
 const createShortUrl = async (originalUrl: string, alias: string) => {
-    // Check if user is connected to the internet before making the request
     if (!navigator.onLine) {
         toast.error('No internet connection. Please check your network settings.');
         throw new Error('No internet connection. Please check your network settings.');
@@ -22,23 +21,19 @@ const createShortUrl = async (originalUrl: string, alias: string) => {
         }
     }
     try {
-        const response = await fetch(API_URL, {
+        const response = await fetch('/api/urlshortener', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
-            credentials: 'include',
-            body: JSON.stringify(alias ? { originalUrl, alias } : { originalUrl }),
+            body: JSON.stringify({ originalUrl, alias })
         });
-
-        const data = await response.json();
-        // toast.success(`${data.message}`);
         if (!response.ok) {
-            throw new Error(`Failed to create short URL: ${data.message}`);
+            throw new Error('Failed to create short URL');
         }
-        console.log(`Shortened Url: ${data.shortenURL} and message: ${data.message}`);
-
+        const data = await response.json();
         return data.shortenURL;
+
     } catch (error) {
         console.error('Error creating short URL:', error);
         toast.error(String(error));
@@ -48,24 +43,14 @@ const createShortUrl = async (originalUrl: string, alias: string) => {
 
 const getStats = async () => {
     try {
-        const response = await fetch(API_URL, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-        });
-
-        const data = await response.json();
-        console.log(`Total Shortened Urls: ${data.totalShortenedUrls} and Total Clicks: ${data.totalClicks}`);
-        const totalShortenedUrls: number = parseInt(data.totalShortenedUrls);
-        const totalClicks = data.totalClicks;
-        return { totalShortenedUrls, totalClicks };
+        const response = await fetch('/api/urlshortener');
+        if (!response.ok) {
+            throw new Error('Failed to fetch stats');
+        }
+        return await response.json();
     } catch (error) {
-        console.error('Error getting stats:', error);
-        toast.error(String(error));
-        return { totalShortenedUrls: 0, totalClicks: 0 };
+        toast.error(`Failed to fetch stats: ${(error as Error).message}`);
     }
-};
+}
 
 export { createShortUrl, getStats };
