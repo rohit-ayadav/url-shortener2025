@@ -1,7 +1,5 @@
 import { PreviewPage } from './PreviewPage';
-import connectDB from "@/utils/db";
 import { Url } from "@/models/urlShortener";
-import { NextResponse } from 'next/server';
 import NotFound from '../not-found';
 
 function normalizeUrl(url: string): string {

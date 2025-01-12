@@ -256,7 +256,7 @@ const URLShortener = () => {
                           setShowQR(true);
                         }}
                         onCopy={handleCopy}
-                        onOpen={handleOpen}
+                        onOpen={handleOpen} 
                         onShare={handleShare}
                       />
                     ))}
