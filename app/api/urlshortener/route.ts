@@ -124,8 +124,28 @@ export async function POST(request: NextRequest) {
         });
       }
     }
+    let shortenedUrl = `${request.nextUrl.origin}/${shortenURL}`;
+    // Remove trailing slash if present and dont start with http or https or www 
+    if (shortenedUrl.endsWith("/")) {
+      shortenedUrl = shortenedUrl.slice(0, -1);
+    }
+    // if url start with http www or https www remove it
+    if (shortenedUrl.startsWith("http://www.")) {
+      shortenedUrl = shortenedUrl.slice(11);
+    }
+    if (shortenedUrl.startsWith("https://www.")) {
+      shortenedUrl = shortenedUrl.slice(12);
+    }
+    if (shortenedUrl.startsWith("www.")) {
+      shortenedUrl = shortenedUrl.slice(4);
+    }
+    if (shortenedUrl.startsWith("http://")) {
+      shortenedUrl = shortenedUrl.slice(7);
+    }
+    if (shortenedUrl.startsWith("https://")) {
+      shortenedUrl = shortenedUrl.slice(8);
+    }
 
-    const shortenedUrl = `${request.nextUrl.origin}/${shortenURL}`;
     await Url.create({
       originalUrl,
       shortenURL,
