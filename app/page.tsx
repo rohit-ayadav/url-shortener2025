@@ -17,7 +17,6 @@ import { isValidURL, cleanText } from '@/utils/utils';
 import { useAlias } from '@/hooks/useAlias';
 import { createShortUrl, getStats } from '@/components/createShortUrl';
 
-
 const URLShortener = () => {
   const [url, setUrl] = useState('');
   const [urls, setUrls] = useState('');
