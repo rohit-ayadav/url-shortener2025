@@ -18,13 +18,14 @@ export const metadata: Metadata = {
   title: "URL Shortener",
   description: "A simple URL shortener",
   manifest: "/manifest.json",
-  themeColor: "#000000",
 };
 
 // Separate viewport export
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: "#2563EB", // Geist UI primary color
+  
 };
 
 export default function RootLayout({
