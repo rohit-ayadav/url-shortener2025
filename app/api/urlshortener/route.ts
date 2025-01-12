@@ -162,14 +162,15 @@ export async function GET() {
       ])
     ]);
     const totalClicks = totalClicksResult[0]?.totalClicks ?? 0;
-    const totalShortenedURLsCount = totalShortenedURLs[0]?.totalShortenedURLs ?? 0;
+    const totalShortenedURLsCount: number = totalShortenedURLs[0]?.totalShortenedURLs ?? 0;
     const response = {
       totalClicks,
-      totalShortenedURLs: totalShortenedURLsCount,
+      totalShortenedURLsCount,
       documentation,
       help,
       howtouse
     };
+    console.log(`Total Clicks: ${totalClicks}, Total Shortened URLs: ${totalShortenedURLsCount}`);
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching URL statistics:", error);

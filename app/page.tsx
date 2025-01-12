@@ -35,7 +35,7 @@ const URLShortener = () => {
   useEffect(() => {
     const fetchStats = async () => {
       const stats = await getStats();
-      setTotalShortenedUrls(stats.totalShortenedUrls);
+      setTotalShortenedUrls(stats.totalShortenedURLsCount);
       setTotalClicks(stats.totalClicks);
     };
     fetchStats();

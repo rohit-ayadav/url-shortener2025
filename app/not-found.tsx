@@ -6,7 +6,7 @@ import styles from './NotFound.module.css';
 
 const NotFound = () => {
     const router = useRouter();
-    const [countdown, setCountdown] = useState(4);
+    const [countdown, setCountdown] = useState(5);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -31,7 +31,7 @@ const NotFound = () => {
             </p>
 
             <p className={styles.para}>
-                Redirecting to <a href="/">home</a> page in {countdown} seconds...
+                Redirecting to <a href="https://resourcesandcarrier.online/">home</a> page in {countdown} seconds...
             </p>
         </div>
     );
