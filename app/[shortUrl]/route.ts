@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import connectDB from "@/utils/db";
+import { Url } from "@/models/urlShortener";
+
+connectDB();
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,14 +11,10 @@ export async function GET(request: NextRequest) {
     paths = paths.filter((s) => s.length > 0);
     console.log(paths);
 
-    // Get the last segment of the path (shortened URL)
     const shortenURL = paths[paths.length - 1];
 
-    // Return the shortened URL and a test message
-    return NextResponse.json({
-      message: "Test successful",
-      shortenURL: shortenURL,
-    });
+    const newUrl = `https://resourcesandcarrier.online/${shortenURL}`;
+    return NextResponse.redirect(newUrl);    
   } catch (error) {
     return NextResponse.json(
       {
