@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/utils/db";
-import { Url } from "@/models/urlShortener";
 
 connectDB();
 
