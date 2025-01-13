@@ -7,6 +7,8 @@ import { documentation, help, howtouse } from "./docs";
 // Connect to database
 connectDB();
 
+const origin = `rushort.site`;
+
 // Configuration
 const CONFIG = {
   BASE_DOMAINS: ["http://localhost:3000", "https://resourcesandcarrier.online", "https://www.rushort.site"],
@@ -88,10 +90,15 @@ export async function POST(request: NextRequest) {
 
     const existingUrl = await Url.findOne({ originalUrl });
     if (existingUrl) {
+      // return NextResponse.json<ApiResponse>({
+      //   message: "Shortened URL already exists",
+      //   success: true,
+      //   shortenURL: `${request.nextUrl.origin}/${existingUrl.shortenURL}`
+      // });
       return NextResponse.json<ApiResponse>({
         message: "Shortened URL already exists",
         success: true,
-        shortenURL: `${request.nextUrl.origin}/${existingUrl.shortenURL}`
+        shortenURL: `${origin}/${existingUrl.shortenURL}`
       });
     }
 
@@ -124,7 +131,6 @@ export async function POST(request: NextRequest) {
         });
       }
     }
-    const origin = `rushort.site`;
     // let shortenedUrl = `${request.nextUrl.origin}/${shortenURL}`;
     let shortenedUrl = `${origin}/${shortenURL}`;
 
@@ -132,14 +138,16 @@ export async function POST(request: NextRequest) {
     // shortenedUrl = shortenedUrl.replace(/^(https?:\/\/)?(www\.)?/, ""); // Remove http(s):// and www. from the beginning of the URL
     // shortenURL = shortenURL.replace(/\/$/, ""); // Remove trailing slash from the URL
     // shortenURL 
-    
 
-    await Url.create({
-      originalUrl,
-      shortenURL,
-      click: 0,
-      createdAt: new Date()
-    });
+    const newUrl =
+      await Url.create({
+        originalUrl,
+        shortenURL,
+        click: 0,
+        createdAt: new Date()
+      });
+
+    console.log(`Shortened URL created: ${newUrl}`);
 
     return NextResponse.json<ApiResponse>({
       message: "Shortened URL created successfully",
