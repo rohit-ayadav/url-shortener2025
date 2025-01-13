@@ -12,7 +12,7 @@ const origin = `rushort.site`;
 // Configuration
 const CONFIG = {
   BASE_DOMAINS: ["http://localhost:3000", "https://resourcesandcarrier.online", "https://www.rushort.site"],
-  SHORT_URL_LENGTH: 8,
+  SHORT_URL_LENGTH: 4,
   MAX_ATTEMPTS: 10
 } as const;
 
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
       shortenURL = alias;
     } else {
       do {
-        shortenURL = generateShortUrl(6);
+        shortenURL = generateShortUrl(CONFIG.SHORT_URL_LENGTH);
         urlInUse = await Url.findOne({ shortenURL });
         attempts++;
       } while (urlInUse && attempts < CONFIG.MAX_ATTEMPTS);
