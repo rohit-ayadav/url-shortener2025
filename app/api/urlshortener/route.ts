@@ -9,7 +9,7 @@ connectDB();
 
 // Configuration
 const CONFIG = {
-  BASE_DOMAINS: ["http://localhost:3000", "https://resourcesandcarrier.online"],
+  BASE_DOMAINS: ["http://localhost:3000", "https://resourcesandcarrier.online", "https://www.rushort.site"],
   SHORT_URL_LENGTH: 8,
   MAX_ATTEMPTS: 10
 } as const;
