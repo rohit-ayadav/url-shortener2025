@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request, { params }: { params: { shortUrl: string } }) {
-  // Construct the new URL using the same short URL parameter
-  const redirectUrl = `https://resourcesandcarrier.online/${params.shortUrl}`;
-
-  // Redirect to the new URL
-  return NextResponse.redirect(redirectUrl, 302);
+  try {
+    // Return the params and a test message as JSON
+    return NextResponse.json({
+      message: "Test successful",
+      params: params,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        message: "An error occurred during testing",
+        error: error.message,
+      },
+      { status: 500 }
+    );
+  }
 }
