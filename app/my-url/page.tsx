@@ -19,6 +19,17 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { deleteFromLocalStorage, getStoredUrls } from '@/components/LocalStorage';
 import { deleteFromDB } from '@/lib/FindTotalClick';
 
@@ -34,6 +45,8 @@ const LOCALSTORAGE_KEY = 'shortenedUrls';
 const MyUrls = () => {
     const [urls, setUrls] = useState<UrlEntry[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [urlToDelete, setUrlToDelete] = useState<string | null>(null);
+    const [urlToOpen, setUrlToOpen] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchUrls = async () => {
@@ -43,7 +56,6 @@ const MyUrls = () => {
         };
         fetchUrls();
     }, []);
-
 
     const copyToClipboard = async (text: string) => {
         try {
@@ -63,8 +75,7 @@ const MyUrls = () => {
                 toast.success('URL deleted successfully');
                 const updatedUrls = urls.filter((url) => url.shortUrl !== shortUrl);
                 setUrls(updatedUrls);
-            }else{
-                // toast.error(`${(await deleteFromDB(shortUrl)).error}`);
+            } else {
                 throw new Error(`${(await deleteFromDB(shortUrl)).error}`);
             }
         } catch (error) {
@@ -116,10 +127,7 @@ const MyUrls = () => {
 
     return (
         <Card className="w-full">
-            <Toaster
-                position="top-right"
-                reverseOrder={false}
-            />
+            <Toaster position="top-right" reverseOrder={false} />
             <CardHeader>
                 <CardTitle>My URLs</CardTitle>
                 <CardDescription>
@@ -145,36 +153,94 @@ const MyUrls = () => {
                                         {formatUrl(url.shortUrl, 30)}
                                     </TableCell>
                                     <TableCell>{formatUrl(url.originalUrl)}</TableCell>
-
                                     <TableCell>{formatDate(url.createdAt)}</TableCell>
                                     <TableCell>{url.totalClicks ?? 0}</TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="icon"
-                                                onClick={() => copyToClipboard(url.shortUrl)}
-                                                title="Copy short URL"
-                                            >
-                                                <Copy className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="icon"
-                                                onClick={() => window.open(url.originalUrl, '_blank')}
-                                                title="Open original URL"
-                                            >
-                                                <ExternalLink className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="icon"
-                                                onClick={() => deleteUrl(url.shortUrl)}
-                                                className="text-red-500 hover:text-red-700"
-                                                title="Delete URL"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        title="Copy short URL"
+                                                    >
+                                                        <Copy className="h-4 w-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Copy URL</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Do you want to copy this shortened URL to your clipboard?
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => copyToClipboard(url.shortUrl)}>
+                                                            Copy
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        title="Open original URL"
+                                                    >
+                                                        <ExternalLink className="h-4 w-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Open URL</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Do you want to open this URL in a new tab?
+                                                            <div className="mt-2 text-sm text-gray-500">
+                                                                {url.originalUrl}
+                                                            </div>
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => window.open(url.originalUrl, '_blank')}>
+                                                            Open
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="text-red-500 hover:text-red-700"
+                                                        title="Delete URL"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Delete URL</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Are you sure you want to delete this shortened URL {url.shortUrl}? This action cannot be undone.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            className="bg-red-500 hover:bg-red-600"
+                                                            onClick={() => deleteUrl(url.shortUrl)}
+                                                        >
+                                                            Delete
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
                                         </div>
                                     </TableCell>
                                 </TableRow>
