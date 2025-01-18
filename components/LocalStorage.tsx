@@ -15,38 +15,41 @@ const ERROR_MESSAGES = {
     URL_EXISTS: 'This URL has already been shortened'
 } as const;
 
+// Cache for storing parsed localStorage data
+let cachedEntries: UrlEntry[] | null = null;
+
+const parseStorageData = (): UrlEntry[] => {
+    if (cachedEntries) return cachedEntries;
+
+    const data = localStorage.getItem(LOCALSTORAGE_KEY);
+    if (!data) return [];
+
+    try {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed)) {
+            cachedEntries = parsed;
+            return parsed;
+        }
+        console.warn('Converting from old storage format');
+        return [];
+    } catch (error) {
+        console.error('Error parsing localStorage data:', error);
+        return [];
+    }
+};
+
 const saveToLocalStorage = (shortUrl: string, originalUrl: string): void => {
     if (!shortUrl || !originalUrl) {
         throw new Error('Short URL and original URL are required');
     }
 
     try {
-        // Get existing entries
-        const data = localStorage.getItem(LOCALSTORAGE_KEY);
-        let entries: UrlEntry[] = [];
+        const entries = parseStorageData();
 
-        if (data) {
-            try {
-                const parsed = JSON.parse(data);
-                // Validate the parsed data is an array
-                if (Array.isArray(parsed)) {
-                    entries = parsed;
-                } else {
-                    // Handle migration from old format if necessary
-                    console.warn('Converting from old storage format');
-                    entries = [];
-                }
-                console.log('Successfully parsed localStorage data:', entries);
-            } catch (parseError) {
-                console.error('Error parsing localStorage data:', parseError);
-                throw new Error(ERROR_MESSAGES.INVALID_DATA);
-            }
-        }
-
-        // Check for duplicate shortUrl
-        if (entries.some(entry => entry.shortUrl === shortUrl)) {
+        // Check for duplicate shortUrl using Set for O(1) lookup
+        const urlSet = new Set(entries.map(entry => entry.shortUrl));
+        if (urlSet.has(shortUrl)) {
             console.warn('URL already exists in storage');
-            // throw new Error(ERROR_MESSAGES.URL_EXISTS);
             return;
         }
 
@@ -57,70 +60,51 @@ const saveToLocalStorage = (shortUrl: string, originalUrl: string): void => {
             createdAt: new Date().toISOString()
         };
 
-        // Add to entries array
         entries.push(newEntry);
-
-        // Save back to localStorage
+        cachedEntries = entries;
         localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(entries));
 
-        console.log('Successfully saved URL to localStorage:', shortUrl);
     } catch (error) {
         console.error('Error saving to localStorage:', error);
-        // Re-throw the error with a custom message if it's not already our error
         if (error instanceof Error && Object.values(ERROR_MESSAGES).includes(error.message as typeof ERROR_MESSAGES[keyof typeof ERROR_MESSAGES])) {
             throw error;
-        } else {
-            throw new Error(ERROR_MESSAGES.STORAGE_FAILED);
         }
+        throw new Error(ERROR_MESSAGES.STORAGE_FAILED);
     }
 };
 
-// Helper function to retrieve URLs (optional but useful)
 const getStoredUrls = async (): Promise<UrlEntry[]> => {
     try {
-        console.log('Retrieving URLs from localStorage');
-        const data = localStorage.getItem(LOCALSTORAGE_KEY);
-        if (!data) return [];
+        const entries = parseStorageData();
+        
+        // Use Promise.all for concurrent requests
+        const clickDataPromises = entries.map(entry => 
+            findTotalClick(entry.originalUrl)
+                .then(clicks => ({ ...entry, totalClicks: Number(clicks) || 0 }))
+                .catch(() => ({ ...entry, totalClicks: 0 }))
+        );
 
-        // Find total clicks for each URL and then parse the data
+        const updatedEntries = await Promise.all(clickDataPromises);
+        return updatedEntries;
 
-        const entries = JSON.parse(data);
-        if (!Array.isArray(entries)) {
-            throw new Error(ERROR_MESSAGES.INVALID_DATA);
-        }
-        for (let i = 0; i < entries.length; i++) {
-            const entry = entries[i];
-            const clickData = await findTotalClick(entry.originalUrl);
-            console.log('Click data for', entry.originalUrl, ':', clickData);
-            entries[i].totalClicks = clickData || 0;
-        }
-
-        console.log('Successfully retrieved URLs from localStorage:', entries);
-        return entries as UrlEntry[];
     } catch (error) {
         console.error('Error retrieving from localStorage:', error);
-        return [];
+        return parseStorageData(); // Return entries without click data on error
     }
 };
+
 const deleteFromLocalStorage = (shortUrl: string): void => {
     try {
-        const data = localStorage.getItem(LOCALSTORAGE_KEY);
-        if (!data) return;
-
-        const entries = JSON.parse(data);
-        if (!Array.isArray(entries)) {
-            throw new Error(ERROR_MESSAGES.INVALID_DATA);
-        }
-
-        const updatedEntries = entries.filter((entry: UrlEntry) => entry.shortUrl !== shortUrl);
-
+        const entries = parseStorageData();
+        const updatedEntries = entries.filter(entry => entry.shortUrl !== shortUrl);
+        
+        cachedEntries = updatedEntries;
         localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(updatedEntries));
 
-        console.log('Successfully deleted URL from localStorage:', shortUrl);
     } catch (error) {
         console.error('Error deleting from localStorage:', error);
     }
-}
-    ;
+};
+
 export { saveToLocalStorage, getStoredUrls, deleteFromLocalStorage };
 export type { UrlEntry };
