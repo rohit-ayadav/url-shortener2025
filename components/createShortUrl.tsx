@@ -78,7 +78,7 @@ export const createShortUrl = async (
         const data = await response.json() as ShortUrlResponse;
 
         // Update stats in background
-        getStats().catch(console.error);
+        // getStats().catch(console.error);
 
         // Store URL in localStorage
         saveToLocalStorage(data.shortenURL, originalUrl);

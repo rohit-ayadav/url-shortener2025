@@ -41,7 +41,7 @@ const URLShortener = () => {
       setTotalClicks(stats.totalClicks || 0);
     };
     fetchStats();
-  }, []);
+  }, [shortenedURLs, processedText, url, urls, text]); 
 
   const handleShortenSingle = async () => {
     if (!navigator.onLine) {
