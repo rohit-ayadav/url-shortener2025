@@ -16,6 +16,7 @@ import { ShortenedURL } from '@/types/types';
 import { isValidURL, cleanText } from '@/utils/utils';
 import { useAlias } from '@/hooks/useAlias';
 import { createShortUrl, getStats } from '@/components/createShortUrl';
+import Footer from '@/components/Footer';
 
 const URLShortener = () => {
   const [url, setUrl] = useState('');
@@ -61,7 +62,7 @@ const URLShortener = () => {
       setError('Please fix the alias error');
       return;
     }
-    if(alias.length > 32) {
+    if (alias.length > 32) {
       setError('Alias must be less than 32 characters');
       return;
     }
@@ -73,7 +74,7 @@ const URLShortener = () => {
       setError('Prefix must be less than 32 characters');
       return;
     }
-    
+
 
     setLoading(true);
     try {
@@ -278,7 +279,7 @@ const URLShortener = () => {
                           setShowQR(true);
                         }}
                         onCopy={handleCopy}
-                        onOpen={handleOpen} 
+                        onOpen={handleOpen}
                         onShare={handleShare}
                       />
                     ))}
@@ -286,10 +287,15 @@ const URLShortener = () => {
                 )}
               </Tabs>
             </CardContent>
-            <Stats
-              totalShortenedUrls={totalShortenedUrls}
-              totalClicks={totalClicks}
-            />
+            <div className="p-4">
+              <Stats
+                totalShortenedUrls={totalShortenedUrls}
+                totalClicks={totalClicks}
+              />
+            </div>
+            <div className="p-4">
+              <Footer />
+            </div>
           </Card>
         </div>
         <Help />

@@ -59,7 +59,7 @@ export const SingleURLTab = ({
             type="number"
             value={length || ''}
             onChange={(e) => onLengthChange(Number(e.target.value))}
-            placeholder="6"
+            placeholder="Length of short URL"
             min={1}
             max={32}
             className="w-full"
