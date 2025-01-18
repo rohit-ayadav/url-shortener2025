@@ -40,8 +40,6 @@ interface UrlEntry {
     totalClicks?: number;
 }
 
-const LOCALSTORAGE_KEY = 'shortenedUrls';
-
 const MyUrls = () => {
     const [urls, setUrls] = useState<UrlEntry[]>([]);
     const [isLoading, setIsLoading] = useState(true);
