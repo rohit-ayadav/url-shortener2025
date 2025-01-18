@@ -32,6 +32,8 @@ const createShortUrl = async (originalUrl: string, alias: string, prefix: string
             throw new Error('Failed to create short URL');
         }
         const data = await response.json();
+        getStats();
+        toast.success(data.message);
         return data.shortenURL;
 
     } catch (error) {
