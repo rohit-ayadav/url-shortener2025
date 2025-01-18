@@ -4,7 +4,9 @@ const documentation = {
         description: "Shorten a URL",
         body: {
             originalUrl: "string",
-            alias: "string (optional)"
+            alias: "string (optional)",
+            length: "number (optional)",
+            prefix: "string (optional)"
         },
         response: {
             message: "string",
