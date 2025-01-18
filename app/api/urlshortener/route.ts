@@ -1,7 +1,6 @@
 import connectDB from "@/utils/db";
 import { Url } from "@/models/urlShortener";
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 import { documentation, help, howtouse } from "./docs";
 import generateShortUrl from "./generateShortURL";
 
@@ -51,6 +50,7 @@ interface UrlRequest {
   originalUrl: string;
   alias?: string;
   prefix?: string;
+  length?: number;
 }
 
 interface ApiResponse {
@@ -62,11 +62,12 @@ interface ApiResponse {
 
 export async function POST(request: NextRequest) {
   try {
-    const { originalUrl, alias, prefix } = (await request.json()) as UrlRequest;
+    console.log(`POST /api/urlshortener Called`);
+    const { originalUrl, alias, prefix, length }: UrlRequest = await request.json();
 
     if (!originalUrl) {
       return NextResponse.json<ApiResponse>(
-        { message: "originalUrl not get", success: false },
+        { message: "URL is required", success: false },
         { status: 400 }
       );
     }
@@ -74,7 +75,27 @@ export async function POST(request: NextRequest) {
     if (!isValidUrl(originalUrl)) {
       return NextResponse.json<ApiResponse>(
         {
-          message: "Invalid URL",
+          message: "Invalid URL format",
+          success: false
+        },
+        { status: 400 }
+      );
+    }
+
+    if ((prefix?.length ?? 0) + (alias?.length ?? 0) + (length ?? 0) > 32) {
+      return NextResponse.json<ApiResponse>(
+        {
+          message: "Prefix, alias, and length combined must not exceed 32 characters",
+          success: false
+        },
+        { status: 400 }
+      );
+    }
+
+    if ((prefix?.length ?? 0) === 0 && (alias?.length ?? 0) === 0 && (length ?? 0) <= 0) {
+      return NextResponse.json<ApiResponse>(
+        {
+          message: "Prefix, alias, or length must be provided",
           success: false
         },
         { status: 400 }
@@ -98,7 +119,7 @@ export async function POST(request: NextRequest) {
       //   shortenURL: `${request.nextUrl.origin}/${existingUrl.shortenURL}`
       // });
       return NextResponse.json<ApiResponse>({
-        message: "Shortened URL already exists",
+        message: "This URL has already been shortened",
         success: true,
         shortenURL: `${origin}/${existingUrl.shortenURL}`
       });
@@ -118,11 +139,11 @@ export async function POST(request: NextRequest) {
           success: false
         });
       }
-      
-      shortenURL = prefix ? `${prefix}${alias}` : alias; 
+
+      shortenURL = prefix ? `${prefix}${alias}` : alias;
     } else {
       do {
-        shortenURL = generateShortUrl.generateShortUrl({ length: CONFIG.SHORT_URL_LENGTH, prefix: prefix });
+        shortenURL = generateShortUrl.generateShortUrl({ length: length ?? CONFIG.SHORT_URL_LENGTH, prefix });
         urlInUse = await Url.findOne({ shortenURL });
         attempts++;
       } while (urlInUse && attempts < CONFIG.MAX_ATTEMPTS);
