@@ -137,6 +137,8 @@ const MyUrls = () => {
                     <Table>
                         <TableHeader>
                             <TableRow>
+
+                                <TableHead>#</TableHead>
                                 <TableHead>Short URL</TableHead>
                                 <TableHead>Original URL</TableHead>
                                 <TableHead>Created</TableHead>
@@ -147,6 +149,7 @@ const MyUrls = () => {
                         <TableBody>
                             {urls.map((url) => (
                                 <TableRow key={url.shortUrl}>
+                                    <TableCell>{urls.indexOf(url) + 1}</TableCell>
                                     <TableCell className="font-medium">
                                         {formatUrl(url.shortUrl, 30)}
                                     </TableCell>
@@ -245,6 +248,11 @@ const MyUrls = () => {
                             ))}
                         </TableBody>
                     </Table>
+                </div>
+                <div className="mt-4 text-sm text-gray-600 text-center bottom-4">
+                    <p>
+                        <span className="font-medium">{urls.length}</span> URLs found
+                    </p>
                 </div>
             </CardContent>
         </Card>
