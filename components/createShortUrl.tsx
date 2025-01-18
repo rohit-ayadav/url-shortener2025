@@ -110,7 +110,7 @@ export const getStats = async (): Promise<Stats> => {
         return await response.json() as Stats;
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        toast.error(`${ERROR_MESSAGES.FETCH_FAILED}: ${errorMessage}`);
+        toast.error(`${errorMessage}`);
         throw error;
     }
 };
