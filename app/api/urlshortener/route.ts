@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
 
     if (alias) {
       urlInUse = await Url.findOne({
-        shortenURL: alias
+        shortenURL: prefix ? `${prefix}${alias}` : alias
       });
       if (urlInUse) {
         return NextResponse.json<ApiResponse>({
@@ -118,7 +118,8 @@ export async function POST(request: NextRequest) {
           success: false
         });
       }
-      shortenURL = alias;
+      
+      shortenURL = prefix ? `${prefix}${alias}` : alias; 
     } else {
       do {
         shortenURL = generateShortUrl.generateShortUrl({ length: CONFIG.SHORT_URL_LENGTH, prefix: prefix });
