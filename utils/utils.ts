@@ -11,10 +11,10 @@ export const isValidURL = (str: string): boolean => {
 
 export const formatAlias = (alias: string): string => {
   let transformedAlias = alias.trim().toLowerCase();
-  transformedAlias = transformedAlias.replace(/\s/g, '-');
-  transformedAlias = transformedAlias.replace(/[^a-z0-9-_]/g, '');
-  transformedAlias = transformedAlias.replace(/-+/g, '-');
-  transformedAlias = transformedAlias.replace(/^-|-$/g, '');
+  transformedAlias = transformedAlias.replace(/\s/g, '-'); // Replace spaces with hyphens
+  transformedAlias = transformedAlias.replace(/[^a-z0-9-_]/g, ''); // Remove invalid characters
+  transformedAlias = transformedAlias.replace(/-+/g, '-'); // Remove consecutive hyphens
+  // transformedAlias = transformedAlias.replace(/^-|-$/g, ''); // Remove leading and trailing hyphens
   return transformedAlias.slice(0, 50);
 };
 

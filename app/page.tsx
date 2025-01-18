@@ -30,9 +30,9 @@ const URLShortener = () => {
   const [selectedURL, setSelectedURL] = useState<string | null>(null);
   const [totalShortenedUrls, setTotalShortenedUrls] = useState(0);
   const [totalClicks, setTotalClicks] = useState(0);
-  const { alias, setAlias, aliasError } = useAlias();
+  const { alias, setAlias, aliasError, prefix, setPrefix } = useAlias();
   const [length, setLength] = useState(4);
-  const [prefix, setPrefix] = useState('');
+  // const [prefix, setPrefix] = useState('');
 
   useEffect(() => {
     const fetchStats = async () => {
