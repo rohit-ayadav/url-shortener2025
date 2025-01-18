@@ -76,6 +76,8 @@ const saveToLocalStorage = (shortUrl: string, originalUrl: string): void => {
 const getStoredUrls = async (): Promise<UrlEntry[]> => {
     try {
         const entries = parseStorageData();
+        // reverse the entries to show the latest first
+        entries.reverse(); 
         
         // Use Promise.all for concurrent requests
         const clickDataPromises = entries.map(entry => 
