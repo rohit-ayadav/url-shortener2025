@@ -30,6 +30,8 @@ const URLShortener = () => {
   const [totalShortenedUrls, setTotalShortenedUrls] = useState(0);
   const [totalClicks, setTotalClicks] = useState(0);
   const { alias, setAlias, aliasError } = useAlias();
+  const [length, setLength] = useState(4);
+  const [prefix, setPrefix] = useState('');
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -59,10 +61,23 @@ const URLShortener = () => {
       setError('Please fix the alias error');
       return;
     }
+    if(alias.length > 32) {
+      setError('Alias must be less than 32 characters');
+      return;
+    }
+    if (length < 1 || length > 32) {
+      setError('Length must be between 1 and 32 characters');
+      return;
+    }
+    if (prefix.length > 32) {
+      setError('Prefix must be less than 32 characters');
+      return;
+    }
+    
 
     setLoading(true);
     try {
-      const shortened = await createShortUrl(url, alias);
+      const shortened = await createShortUrl(url, alias, prefix, length);
       setShortenedURLs([{ original: url, shortened }]);
       setError('');
     } catch (err: any) {
@@ -89,7 +104,7 @@ const URLShortener = () => {
       const shortened = await Promise.all(
         urlList.map(async u => ({
           original: u,
-          shortened: await createShortUrl(u, '')
+          shortened: await createShortUrl(u, '', '', 4)
         }))
       );
       setShortenedURLs(shortened);
@@ -120,7 +135,7 @@ const URLShortener = () => {
       const shortened = await Promise.all(
         urls.map(async url => ({
           original: url,
-          shortened: await createShortUrl(url, '')
+          shortened: await createShortUrl(url, '', '', 4)
         }))
       );
 
@@ -151,7 +166,7 @@ const URLShortener = () => {
   };
 
   const handleOpen = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    window.open(url, '_blank'); // Open in new tab and here the url is the shortened url
   };
 
   const handleShare = async (url: string) => {
@@ -169,7 +184,7 @@ const URLShortener = () => {
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js?v=1.0.0')
+        navigator.serviceWorker.register('/sw.js?v=1.0.2')
           .then((registration) => {
             console.log('Service Worker registered successfully:', registration.scope);
           })
@@ -208,6 +223,10 @@ const URLShortener = () => {
                     onUrlChange={setUrl}
                     onAliasChange={setAlias}
                     onShorten={handleShortenSingle}
+                    length={length}
+                    onLengthChange={setLength}
+                    prefix={prefix}
+                    onPrefixChange={setPrefix}
                   />
                 </TabsContent>
 
@@ -235,6 +254,10 @@ const URLShortener = () => {
                       setError('');
                     }}
                     onCopyProcessed={() => handleCopy(processedText)}
+                    length={length}
+                    onLengthChange={setLength}
+                    prefix={prefix}
+                    onPrefixChange={setPrefix}
                   />
                 </TabsContent>
 

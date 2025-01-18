@@ -9,7 +9,7 @@ const isValidAlias = (alias: string) => {
     return regex.test(alias);
 };
 
-const createShortUrl = async (originalUrl: string, alias: string) => {
+const createShortUrl = async (originalUrl: string, alias: string, prefix: string, length: number) => {
     if (!navigator.onLine) {
         toast.error('No internet connection. Please check your network settings.');
         throw new Error('No internet connection. Please check your network settings.');
@@ -26,7 +26,7 @@ const createShortUrl = async (originalUrl: string, alias: string) => {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ originalUrl, alias })
+            body: JSON.stringify({ originalUrl, alias, prefix, length })
         });
         if (!response.ok) {
             throw new Error('Failed to create short URL');

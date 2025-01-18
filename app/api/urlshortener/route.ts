@@ -3,6 +3,7 @@ import { Url } from "@/models/urlShortener";
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { documentation, help, howtouse } from "./docs";
+import generateShortUrl from "./generateShortURL";
 
 // Connect to database
 connectDB();
@@ -17,23 +18,23 @@ const CONFIG = {
 } as const;
 
 
-function generateShortUrl(length: number = 8): string {
-  if (length < 1) {
-    throw new Error("Length must be a positive integer.");
-  }
+// function generateShortUrl(length: number = 5): string {
+//   if (length < 1) {
+//     throw new Error("Length must be a positive integer.");
+//   }
 
-  const nonNumericStart = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const alphanumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+//   const nonNumericStart = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+//   const alphanumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-  const firstChar = nonNumericStart.charAt(
-    Math.floor(Math.random() * nonNumericStart.length)
-  );
+//   const firstChar = nonNumericStart.charAt(
+//     Math.floor(Math.random() * nonNumericStart.length)
+//   );
 
-  const randomBytes = crypto.randomBytes(Math.ceil((length - 1) * 3 / 4));
-  const remainingChars = randomBytes.toString("base64url").replace(/[^a-zA-Z0-9]/g, "");
+//   const randomBytes = crypto.randomBytes(Math.ceil((length - 1) * 3 / 4));
+//   const remainingChars = randomBytes.toString("base64url").replace(/[^a-zA-Z0-9]/g, "");
 
-  return (firstChar + remainingChars).substring(0, length);
-}
+//   return (firstChar + remainingChars).substring(0, length);
+// }
 
 
 function isValidUrl(url: string): boolean {
@@ -49,6 +50,7 @@ function isValidUrl(url: string): boolean {
 interface UrlRequest {
   originalUrl: string;
   alias?: string;
+  prefix?: string;
 }
 
 interface ApiResponse {
@@ -60,7 +62,7 @@ interface ApiResponse {
 
 export async function POST(request: NextRequest) {
   try {
-    const { originalUrl, alias } = (await request.json()) as UrlRequest;
+    const { originalUrl, alias, prefix } = (await request.json()) as UrlRequest;
 
     if (!originalUrl) {
       return NextResponse.json<ApiResponse>(
@@ -119,14 +121,14 @@ export async function POST(request: NextRequest) {
       shortenURL = alias;
     } else {
       do {
-        shortenURL = generateShortUrl(CONFIG.SHORT_URL_LENGTH);
+        shortenURL = generateShortUrl.generateShortUrl({ length: CONFIG.SHORT_URL_LENGTH, prefix: prefix });
         urlInUse = await Url.findOne({ shortenURL });
         attempts++;
       } while (urlInUse && attempts < CONFIG.MAX_ATTEMPTS);
 
       if (attempts >= CONFIG.MAX_ATTEMPTS) {
         return NextResponse.json<ApiResponse>({
-          message: "Failed to generate a unique short URL",
+          message: "Failed to generate a unique short URL, please try again",
           success: false
         });
       }
