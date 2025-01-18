@@ -229,13 +229,13 @@ const MyUrls = () => {
                                                         <AlertDialogDescription>
                                                             Do you want to open this URL in a new tab?
                                                             <div className="mt-2 text-sm text-gray-500">
-                                                                {url.originalUrl}
+                                                                {url.shortUrl} will be opened in a new tab.
                                                             </div>
                                                         </AlertDialogDescription>
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>
                                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => window.open(url.originalUrl, '_blank')}>
+                                                        <AlertDialogAction onClick={() => window.open(url.shortUrl, '_blank')}>
                                                             Open
                                                         </AlertDialogAction>
                                                     </AlertDialogFooter>
