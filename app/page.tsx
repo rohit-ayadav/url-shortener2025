@@ -41,7 +41,7 @@ const URLShortener = () => {
       setTotalClicks(stats.totalClicks || 0);
     };
     fetchStats();
-  }, [shortenedURLs, processedText, url, urls, text]); 
+  }, [shortenedURLs, processedText, url, urls, text]);
 
   const handleShortenSingle = async () => {
     if (!navigator.onLine) {
@@ -136,7 +136,7 @@ const URLShortener = () => {
       const shortened = await Promise.all(
         urls.map(async url => ({
           original: url,
-          shortened: await createShortUrl(url, '', '', 4)
+          shortened: await createShortUrl(url, '', prefix, length)
         }))
       );
 

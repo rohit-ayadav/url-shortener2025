@@ -137,11 +137,6 @@ export async function POST(request: NextRequest) {
     // let shortenedUrl = `${request.nextUrl.origin}/${shortenURL}`;
     let shortenedUrl = `${origin}/${shortenURL}`;
 
-    // shortenedUrl = shortenedUrl.replace(/\/$/, "");
-    // shortenedUrl = shortenedUrl.replace(/^(https?:\/\/)?(www\.)?/, ""); // Remove http(s):// and www. from the beginning of the URL
-    // shortenURL = shortenURL.replace(/\/$/, ""); // Remove trailing slash from the URL
-    // shortenURL 
-
     const newUrl =
       await Url.create({
         originalUrl,
