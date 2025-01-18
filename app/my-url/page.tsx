@@ -235,7 +235,10 @@ const MyUrls = () => {
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>
                                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => window.open(url.shortUrl, '_blank')}>
+                                                        <AlertDialogAction onClick={() => {
+                                                            const newUrl = "https://" + url.shortUrl;
+                                                            window.open(newUrl, "_blank");
+                                                        }}>
                                                             Open
                                                         </AlertDialogAction>
                                                     </AlertDialogFooter>

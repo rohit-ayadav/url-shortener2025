@@ -167,7 +167,8 @@ const URLShortener = () => {
   };
 
   const handleOpen = (url: string) => {
-    window.open(url, '_blank'); // Open in new tab and here the url is the shortened url
+    const newURL = "https://" + url;
+    window.open(newURL, '_blank');
   };
 
   const handleShare = async (url: string) => {
