@@ -3,6 +3,7 @@ import { Url } from "@/models/urlShortener";
 import { NextRequest, NextResponse } from "next/server";
 import { documentation, help, howtouse } from "./docs";
 import generateShortUrl from "./generateShortURL";
+import exp from "constants";
 
 // Connect to database
 connectDB();
@@ -51,6 +52,7 @@ interface UrlRequest {
   alias?: string;
   prefix?: string;
   length?: number;
+  expirationDate?: Date;
 }
 
 interface ApiResponse {
@@ -63,7 +65,7 @@ interface ApiResponse {
 export async function POST(request: NextRequest) {
   try {
     console.log(`POST /api/urlshortener Called`);
-    const { originalUrl, alias, prefix, length }: UrlRequest = await request.json();
+    const { originalUrl, alias, prefix, length, expirationDate }: UrlRequest = await request.json();
 
     if (!originalUrl) {
       return NextResponse.json<ApiResponse>(
@@ -163,7 +165,8 @@ export async function POST(request: NextRequest) {
         originalUrl,
         shortenURL,
         click: 0,
-        createdAt: new Date()
+        createdAt: new Date(),
+        expireAt: expirationDate ?? null,
       });
 
     console.log(`Shortened URL created: ${newUrl}`);

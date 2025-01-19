@@ -33,6 +33,7 @@ const URLShortener = () => {
   const { alias, setAlias, aliasError, prefix, setPrefix } = useAlias();
   const [length, setLength] = useState(4);
   // const [prefix, setPrefix] = useState('');
+  const [expirationDate, setExpirationDate] = useState<Date | null>(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -78,7 +79,7 @@ const URLShortener = () => {
 
     setLoading(true);
     try {
-      const shortened = await createShortUrl(url, alias, prefix, length);
+      const shortened = await createShortUrl(url, alias, prefix, length, expirationDate);
       setShortenedURLs([{ original: url, shortened }]);
       setError('');
     } catch (err: any) {
@@ -105,7 +106,7 @@ const URLShortener = () => {
       const shortened = await Promise.all(
         urlList.map(async u => ({
           original: u,
-          shortened: await createShortUrl(u, '', '', 4)
+          shortened: await createShortUrl(u, '', '', length, expirationDate)
         }))
       );
       setShortenedURLs(shortened);
@@ -136,7 +137,7 @@ const URLShortener = () => {
       const shortened = await Promise.all(
         urls.map(async url => ({
           original: url,
-          shortened: await createShortUrl(url, '', prefix, length)
+          shortened: await createShortUrl(url, '', prefix, length, expirationDate)
         }))
       );
 
@@ -229,6 +230,8 @@ const URLShortener = () => {
                     onLengthChange={setLength}
                     prefix={prefix}
                     onPrefixChange={setPrefix}
+                    expirationDate={expirationDate}
+                    onExpirationDateChange={setExpirationDate}
                   />
                 </TabsContent>
 
@@ -260,6 +263,8 @@ const URLShortener = () => {
                     onLengthChange={setLength}
                     prefix={prefix}
                     onPrefixChange={setPrefix}
+                    expirationDate={expirationDate}
+                    onExpirationDateChange={setExpirationDate}
                   />
                 </TabsContent>
 

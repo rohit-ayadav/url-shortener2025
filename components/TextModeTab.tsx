@@ -18,6 +18,8 @@ interface TextModeTabProps {
   onLengthChange: (value: number) => void;
   prefix: string;
   onPrefixChange: (value: string) => void;
+  expirationDate: Date | null;
+  onExpirationDateChange: (value: Date) => void;
 }
 
 export const TextModeTab = ({
@@ -33,6 +35,8 @@ export const TextModeTab = ({
   onLengthChange,
   prefix,
   onPrefixChange,
+  expirationDate,
+  onExpirationDateChange,
 }: TextModeTabProps) => {
   return (
     <div className="space-y-4">

@@ -44,6 +44,7 @@ export const createShortUrl = async (
     alias?: string,
     prefix?: string,
     length?: number,
+    expirationDate: Date | null = null
 ): Promise<string> => {
 
 
@@ -66,7 +67,7 @@ export const createShortUrl = async (
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ originalUrl, alias, prefix, length }),
+            body: JSON.stringify({ originalUrl, alias, prefix, length, expirationDate }),
         });
 
         if (!response.ok) {
