@@ -141,10 +141,27 @@ const MyUrls = () => {
     if (urls.length === 0) {
         return (
             <Card className="w-full">
-                <CardContent className="p-6">
-                    <Alert>
+                <CardHeader>
+                    <CardTitle>My URLs</CardTitle>
+                    <CardDescription>
+                        Manage all your shortened URLs in one place
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Alert variant="default">
                         <AlertDescription>
-                            You haven't created any short URLs yet. Create one to see it here!
+                            You have not shortened any URLs yet. Go ahead and shorten your first URL!
+                            <br />
+                            <a href="/" className="text-blue-500 hover:text-blue-700">
+                                Shorten a URL
+                            </a>
+
+                            <br />
+                            <br />
+                            <span className="text-gray-500">
+                                Your shortened URLs will appear here once you have shortened them.
+                            </span>
+                            
                         </AlertDescription>
                     </Alert>
                 </CardContent>
