@@ -271,7 +271,7 @@ const TextFormatPage = () => {
                 </Card>
 
                 {notification && (
-                    <Alert className="fixed bottom-4 right-4 max-w-sm animate-fade-in">
+                    <Alert className="fixed bottom-4 right-4 max-w-sm w-full sm:w-auto animate-fade-in mx-4 sm:mx-0">
                         <AlertDescription>{notification}</AlertDescription>
                     </Alert>
                 )}
