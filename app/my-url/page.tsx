@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
-import { Trash2, Copy, ExternalLink, ArrowBigLeft, TextCursorInputIcon, Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { Trash2, Copy, ExternalLink, ArrowBigLeft, TextCursorInputIcon, Wifi, WifiOff, RefreshCw, Home } from 'lucide-react';
 import {
     Card,
     CardContent,
@@ -195,36 +195,47 @@ const MyUrls = () => {
 
     return (
         <Card className="w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-center mb-4 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-md shadow-sm">
-                <div className="flex items-center space-x-4 mb-2 sm:mb-0">
-                    <a href="/" className="flex items-center text-blue-500 hover:text-blue-700">
-                        <ArrowBigLeft className="h-6 w-6 mr-2" /> <span>Home</span>
-                    </a>
-                    <a href='/format-text' className="flex items-center text-blue-500 hover:text-blue-700">
-                        <TextCursorInputIcon className="h-6 w-6 mr-2" /> <span>Format Text</span>
-                    </a>
-                </div>
-                <div className="flex items-center space-x-2">
-                    {!isOnline && (
-                        <span className="flex items-center text-yellow-600 text-sm">
-                            <WifiOff className="h-4 w-4 mr-1" /> Offline
-                        </span>
-                    )}
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleRefresh}
-                        disabled={!isOnline || isRefreshing}
-                        className="flex items-center"
-                    >
-                        <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
-                        Refresh
-                    </Button>
+            {/* Navigation Header */}
+            <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 shadow-sm">
+                <div className="max-w-4xl mx-auto px-4 py-2 flex items-center justify-between">
+                    <div className="flex gap-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => window.location.href = '/'}
+                        >
+                            <Home className="h-5 w-5" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => window.history.back()}
+                        >
+                            <ArrowBigLeft className="h-5 w-5" />
+                        </Button>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleRefresh}
+                            disabled={isRefreshing}
+                        >
+                            <RefreshCw className="h-5 w-5" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(window.location.href)}
+                        >
+                            <TextCursorInputIcon className="h-5 w-5" />
+                        </Button>
+                    </div>
                 </div>
             </div>
 
+            {/* Toaster for notifications */}
             <Toaster position="top-right" reverseOrder={false} />
-            
             <CardHeader>
                 <div className="flex justify-between items-center">
                     <div>
