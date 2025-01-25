@@ -76,21 +76,25 @@ const saveToLocalStorage = (shortUrl: string, originalUrl: string): void => {
 const getStoredUrls = async (): Promise<UrlEntry[]> => {
     try {
         const entries = parseStorageData();
-        // reverse the entries to show the latest first
-        entries.reverse(); 
-        
-        // Use Promise.all for concurrent requests
-        const clickDataPromises = entries.map(entry => 
-            findTotalClick(entry.originalUrl)
-                .then(clicks => ({ ...entry, totalClicks: Number(clicks) || 0 }))
-                .catch(() => ({ ...entry, totalClicks: 0 }))
-        );
+        entries.reverse(); // Show latest entries first
 
-        const updatedEntries = await Promise.all(clickDataPromises);
+        // Extract all original URLs
+        const originalUrls = entries.map(entry => entry.originalUrl);
+
+        // Fetch click data for all URLs from the server
+        console.log("Get Stored Urls function called");
+        const clickData = await findTotalClick(originalUrls);
+
+        // Update entries with total clicks
+        const updatedEntries = entries.map(entry => ({
+            ...entry,
+            totalClicks: clickData[entry.originalUrl] || 0
+        }));
+
         return updatedEntries;
 
     } catch (error) {
-        console.error('Error retrieving from localStorage:', error);
+        console.error('Error retrieving click data:', error);
         return parseStorageData(); // Return entries without click data on error
     }
 };
@@ -99,7 +103,7 @@ const deleteFromLocalStorage = (shortUrl: string): void => {
     try {
         const entries = parseStorageData();
         const updatedEntries = entries.filter(entry => entry.shortUrl !== shortUrl);
-        
+
         cachedEntries = updatedEntries;
         localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(updatedEntries));
 

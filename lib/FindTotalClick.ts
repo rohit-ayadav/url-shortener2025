@@ -9,12 +9,21 @@ interface ResponseTypes {
     error: string;
 }
 
-async function findTotalClick(originalUrl: string) {
-    const url = await Url.findOne({ originalUrl });
-    // console.log(`URL found: ${url}`);
-    const totalClicks = url?.click || 0;
-    return totalClicks;
+// Batch fetch click counts for multiple URLs
+async function findTotalClick(originalUrls: string[]): Promise<{ [url: string]: number }> {
+    // Use MongoDB's `$in` to fetch all URLs in a single query
+    console.log("Find Total Click function called");
+    const urls = await Url.find({ originalUrl: { $in: originalUrls } });
+
+    // Map the results to a dictionary of { originalUrl: totalClicks }
+    const clickData: { [url: string]: number } = {};
+    urls.forEach(url => {
+        clickData[url.originalUrl] = url.click || 0;
+    });
+
+    return clickData;
 }
+
 
 async function deleteFromDB(shortenURL: string) {
     try {
