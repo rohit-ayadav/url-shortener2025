@@ -40,7 +40,7 @@ export const SingleURLTab = ({
   onExpirationDateChange,
 }: SingleURLTabProps) => {
   const [expiryType, setExpiryType] = useState<'calendar' | 'duration'>('duration');
-  
+
   const isValidUrl = (urlString: string) => {
     try {
       new URL(urlString);
@@ -56,10 +56,10 @@ export const SingleURLTab = ({
   };
 
   const isUrlValid = url.length === 0 || isValidUrl(url);
-  
+
   const minDate = new Date();
   minDate.setHours(0, 0, 0, 0);
-  
+
   const maxDate = new Date();
   maxDate.setFullYear(maxDate.getFullYear() + 5);
 
@@ -86,6 +86,12 @@ export const SingleURLTab = ({
     switch (value) {
       case '1day':
         expiryDate.setDate(now.getDate() + 1);
+        break;
+      case '2days':
+        expiryDate.setDate(now.getDate() + 2);
+        break;
+      case '5days':
+        expiryDate.setDate(now.getDate() + 5);
         break;
       case '1week':
         expiryDate.setDate(now.getDate() + 7);
@@ -226,7 +232,7 @@ export const SingleURLTab = ({
           <Label className="text-base font-medium">
             Expiration Date
           </Label>
-          
+
           <RadioGroup
             className="grid grid-cols-2 gap-4"
             defaultValue="duration"
@@ -249,6 +255,8 @@ export const SingleURLTab = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1day">1 Day</SelectItem>
+                <SelectItem value="2days">2 Days</SelectItem>
+                <SelectItem value="5days">5 Days</SelectItem>
                 <SelectItem value="1week">1 Week</SelectItem>
                 <SelectItem value="1month">1 Month</SelectItem>
                 <SelectItem value="6months">6 Months</SelectItem>
@@ -260,6 +268,7 @@ export const SingleURLTab = ({
               <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                 <Calendar className="h-4 w-4 text-gray-500" />
               </div>
+              {/* take date and time input */}
               <Input
                 type="date"
                 value={formatDateForInput(expirationDate)}
@@ -268,9 +277,22 @@ export const SingleURLTab = ({
                 max={formatDateForInput(maxDate)}
                 className="pl-10"
               />
+              <Input  
+                type="time"
+                value={expirationDate?.toLocaleTimeString()}
+                onChange={(e) => {
+                  const time = e.target.value;
+                  if (!expirationDate) return;
+                  const [hours, minutes] = time.split(':').map(Number);
+                  const newDate = new Date(expirationDate);
+                  newDate.setHours(hours, minutes);
+                  onExpirationDateChange(newDate);
+                }}
+                className="pl-10"
+              />
             </div>
           )}
-          
+
           <p className="text-sm text-gray-500">
             Links can expire up to 5 years from today (optional)
           </p>
