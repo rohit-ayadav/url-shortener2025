@@ -48,11 +48,11 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-    // matcher: [
-    //     "/admin",
-    //     "/dashboard",
-    //     "/my-urls",
-    //     "/settings",
-    //     "/bulk-shortener",
-    // ]
+    matcher: [
+        "/admin",
+        "/dashboard",
+        "/my-urls",
+        "/settings",
+        "/bulk-shortener",
+    ]
 };
