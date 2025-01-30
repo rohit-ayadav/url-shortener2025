@@ -4,8 +4,8 @@ interface IUrlShortener extends Document {
   originalUrl: string;
   shortenURL: string;
   createdAt: Date;
-  click: number; // Changed to lowercase
-  expireAt?: Date; // Optional expiration field
+  click: number;
+  expireAt?: Date;
 }
 
 const urlShortenerSchema: Schema = new mongoose.Schema(
@@ -25,9 +25,23 @@ const urlShortenerSchema: Schema = new mongoose.Schema(
       default: 0,
     },
     expireAt: {
-      type: Date, // Field for TTL-based expiration
+      type: Date,
       default: null,
     },
+    createdAt: {
+      type: Date,
+      required: true,
+      default: Date.now,
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    lastClicked: {
+      type: Date,
+      default: null
+    }
   },
   { timestamps: true }
 );

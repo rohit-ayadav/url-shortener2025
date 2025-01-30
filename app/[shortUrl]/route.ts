@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import connectDB from "@/utils/db";
+import { connectDB } from "@/utils/db";
+import { Url } from "@/models/urlShortener";
 
-connectDB();
+await connectDB();
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,9 +12,26 @@ export async function GET(request: NextRequest) {
     console.log(paths);
 
     const shortenURL = paths[paths.length - 1];
+    try {
+      const url = await Url.findOne({ shortenURL });
+      if(url) {
+        url.click++;
+        await url.save();
+        return NextResponse.redirect(url.originalUrl);
+      }
+
+    } catch (error) {
+      return NextResponse.json(
+        {
+          message: "An error occurred",
+          error: (error as Error).message,
+        },
+        { status: 500 }
+      );
+    }
 
     const newUrl = `https://resourcesandcarrier.online/${shortenURL}`;
-    return NextResponse.redirect(newUrl);    
+    return NextResponse.redirect(newUrl);
   } catch (error) {
     return NextResponse.json(
       {

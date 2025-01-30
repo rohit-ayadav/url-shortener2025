@@ -1,5 +1,4 @@
 import { toast } from 'react-hot-toast';
-import { saveToLocalStorage } from './LocalStorage';
 
 interface ShortUrlResponse {
     shortenURL: string;
@@ -75,43 +74,18 @@ export const createShortUrl = async (
             const errorMessage = errorData.message || ERROR_MESSAGES.CREATE_FAILED;
             throw new Error(errorMessage);
         }
+        console.log('\n\n\nResponse:', response);
 
         const data = await response.json() as ShortUrlResponse;
 
-        // Update stats in background
-        // getStats().catch(console.error);
-
-        // Store URL in localStorage
-        saveToLocalStorage(data.shortenURL, originalUrl);
-
         toast.success(data.message);
+        console.log('Short URL created:', data);
         return data.shortenURL;
 
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error('Error creating short URL:', error);
         toast.error(errorMessage);
-        throw error;
-    }
-};
-
-export const getStats = async (): Promise<Stats> => {
-    if (!checkInternetConnection()) {
-        toast.error(ERROR_MESSAGES.NO_INTERNET);
-        throw new Error(ERROR_MESSAGES.NO_INTERNET);
-    }
-
-    try {
-        const response = await fetch(API_ENDPOINTS.shortener);
-
-        if (!response.ok) {
-            throw new Error(ERROR_MESSAGES.FETCH_FAILED);
-        }
-
-        return await response.json() as Stats;
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        toast.error(`${errorMessage}`);
         throw error;
     }
 };

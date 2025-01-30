@@ -1,12 +1,16 @@
 
 
 // src/components/url-shortener/utils.ts
+// export const isValidURL = (str: string): boolean => {
+//   try {
+//     return !!new URL(str);
+//   } catch {
+//     return false;
+//   }
+// };
+
 export const isValidURL = (str: string): boolean => {
-  try {
-    return !!new URL(str);
-  } catch {
-    return false;
-  }
+  return /^(ftp|http|https):\/\/[^ "]+$/.test(str);
 };
 
 export const formatAlias = (alias: string): string => {

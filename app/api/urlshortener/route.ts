@@ -1,220 +1,83 @@
-import connectDB from "@/utils/db";
+import { connectDB } from "@/utils/db";
 import { Url } from "@/models/urlShortener";
 import { NextRequest, NextResponse } from "next/server";
-import { documentation, help, howtouse } from "./docs";
 import generateShortUrl from "./generateShortURL";
-import exp from "constants";
+import { getServerSession } from "next-auth";
+import { User } from "@/models/User";
 
-// Connect to database
-connectDB();
+await connectDB();
 
-const origin = `rushort.site`;
-
-// Configuration
+const ORIGIN = "rushort.site";
 const CONFIG = {
   BASE_DOMAINS: ["http://localhost:3000", "https://resourcesandcarrier.online", "https://www.rushort.site"],
   SHORT_URL_LENGTH: 4,
   MAX_ATTEMPTS: 10
 } as const;
 
-
-// function generateShortUrl(length: number = 5): string {
-//   if (length < 1) {
-//     throw new Error("Length must be a positive integer.");
-//   }
-
-//   const nonNumericStart = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-//   const alphanumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-//   const firstChar = nonNumericStart.charAt(
-//     Math.floor(Math.random() * nonNumericStart.length)
-//   );
-
-//   const randomBytes = crypto.randomBytes(Math.ceil((length - 1) * 3 / 4));
-//   const remainingChars = randomBytes.toString("base64url").replace(/[^a-zA-Z0-9]/g, "");
-
-//   return (firstChar + remainingChars).substring(0, length);
-// }
-
-
-function isValidUrl(url: string): boolean {
+const isValidUrl = (url: string) => {
   try {
     new URL(url);
     return true;
-  } catch (_) {
+  } catch {
     return false;
   }
-}
-
-// Type definitions for better type safety
-interface UrlRequest {
-  originalUrl: string;
-  alias?: string;
-  prefix?: string;
-  length?: number;
-  expirationDate?: Date;
-}
-
-interface ApiResponse {
-  message: string;
-  success: boolean;
-  shortenURL?: string;
-  error?: string;
-}
+};
 
 export async function POST(request: NextRequest) {
+  const session = await getServerSession();
+  const email = session?.user?.email;
+  if (!email) return NextResponse.json({ message: "You must be logged in to shorten URLs", success: false }, { status: 401 });
+
   try {
-    console.log(`POST /api/urlshortener Called`);
-    const { originalUrl, alias, prefix, length, expirationDate }: UrlRequest = await request.json();
+    const { originalUrl, alias, prefix, length, expirationDate } = await request.json();
+    // console.log("Request body:", { originalUrl, alias, prefix, length, expirationDate });
+    if (!originalUrl) return NextResponse.json({ message: "Provide original URL", success: false }, { status: 400 });
+    if (!isValidUrl(originalUrl)) return NextResponse.json({ message: "Invalid URL", success: false }, { status: 400 });
+    if ((prefix?.length ?? 0) + (alias?.length ?? 0) + (length ?? 0) > 32)
+      return NextResponse.json({ message: "Combined length must not exceed 32 characters", success: false }, { status: 400 });
 
-    if (!originalUrl) {
-      return NextResponse.json<ApiResponse>(
-        { message: "URL is required", success: false },
-        { status: 400 }
-      );
-    }
+    if (!prefix && !alias && !length)
+      return NextResponse.json({ message: "Provide prefix, alias, or length", success: false }, { status: 400 });
 
-    if (!isValidUrl(originalUrl)) {
-      return NextResponse.json<ApiResponse>(
-        {
-          message: "Invalid URL format",
-          success: false
-        },
-        { status: 400 }
-      );
-    }
+    if (CONFIG.BASE_DOMAINS.some(domain => originalUrl.startsWith(domain)))
+      return NextResponse.json({ message: "Cannot shorten this website's URL", success: true, shortenURL: originalUrl }, { status: 200 });
 
-    if ((prefix?.length ?? 0) + (alias?.length ?? 0) + (length ?? 0) > 32) {
-      return NextResponse.json<ApiResponse>(
-        {
-          message: "Prefix, alias, and length combined must not exceed 32 characters",
-          success: false
-        },
-        { status: 400 }
-      );
-    }
+    if (expirationDate && new Date(expirationDate) < new Date()) return NextResponse.json({ message: "Expiration date must be in the future", success: false }, { status: 400 });
 
-    if ((prefix?.length ?? 0) === 0 && (alias?.length ?? 0) === 0 && (length ?? 0) <= 0) {
-      return NextResponse.json<ApiResponse>(
-        {
-          message: "Prefix, alias, or length must be provided",
-          success: false
-        },
-        { status: 400 }
-      );
-    }
-
-    // Check if URL is from protected domains
-    if (CONFIG.BASE_DOMAINS.some((domain) => originalUrl.startsWith(domain))) {
-      return NextResponse.json<ApiResponse>({
-        message: "Nice try! But you can't shorten the URL of this website",
-        success: true,
-        shortenURL: originalUrl
-      });
-    }
+    if (alias?.includes(" ") || prefix?.includes(" "))
+      return NextResponse.json({ message: "Alias or prefix must not contain whitespace", success: false }, { status: 400 });
 
     const existingUrl = await Url.findOne({ originalUrl });
-    if (existingUrl) {
-      // return NextResponse.json<ApiResponse>({
-      //   message: "Shortened URL already exists",
-      //   success: true,
-      //   shortenURL: `${request.nextUrl.origin}/${existingUrl.shortenURL}`
-      // });
-      return NextResponse.json<ApiResponse>({
-        message: "This URL has already been shortened",
-        success: true,
-        shortenURL: `${origin}/${existingUrl.shortenURL}`
-      });
-    }
+    if (existingUrl)
+      return NextResponse.json({ message: "Already shortened", success: true, shortenURL: `${ORIGIN}/${existingUrl.shortenURL}` });
 
-    let shortenURL: string;
-    let urlInUse;
-    let attempts = 0;
+    const user = await User.findOne({ email });
+    if (!user) return NextResponse.json({ message: "Login required", success: false }, { status: 401 });
+    if (user.dailyQuotaUsed >= user.dailyQuotaLimit) return NextResponse.json({ message: "Daily quota exceeded, Kindly upgrade to premium", success: false }, { status: 403 });
 
+    let shortenURL = alias ? (prefix ? `${prefix}${alias}` : alias) : "";
     if (alias) {
-      urlInUse = await Url.findOne({
-        shortenURL: prefix ? `${prefix}${alias}` : alias
-      });
-      if (urlInUse) {
-        return NextResponse.json<ApiResponse>({
-          message: "Alias already in use",
-          success: false
-        });
-      }
-
-      shortenURL = prefix ? `${prefix}${alias}` : alias;
+      if (await Url.findOne({ shortenURL })) return NextResponse.json({ message: "Alias in use", success: false }, { status: 400 });
     } else {
+      let attempts = 0;
       do {
         shortenURL = generateShortUrl.generateShortUrl({ length: length ?? CONFIG.SHORT_URL_LENGTH, prefix });
-        urlInUse = await Url.findOne({ shortenURL });
         attempts++;
-      } while (urlInUse && attempts < CONFIG.MAX_ATTEMPTS);
-
-      if (attempts >= CONFIG.MAX_ATTEMPTS) {
-        return NextResponse.json<ApiResponse>({
-          message: "Failed to generate a unique short URL, please try again",
-          success: false
-        });
-      }
+      } while (await Url.findOne({ shortenURL }) && attempts < CONFIG.MAX_ATTEMPTS);
+      if (attempts >= CONFIG.MAX_ATTEMPTS) return NextResponse.json({ message: "Failed to generate unique URL", success: false }, { status: 500 });
     }
-    // let shortenedUrl = `${request.nextUrl.origin}/${shortenURL}`;
-    let shortenedUrl = `${origin}/${shortenURL}`;
 
-    const newUrl =
-      await Url.create({
-        originalUrl,
-        shortenURL,
-        click: 0,
-        createdAt: new Date(),
-        expireAt: expirationDate ?? null,
-      });
-
-    console.log(`Shortened URL created: ${newUrl}`);
-
-    return NextResponse.json<ApiResponse>({
-      message: "Shortened URL created successfully",
-      success: true,
-      shortenURL: shortenedUrl
+    const newUrl = await Url.create({
+      originalUrl, shortenURL, createdBy: user._id, click: 0, createdAt: new Date(), expireAt: expirationDate ?? null
     });
-  } catch (error) {
-    console.error("URL Shortener Error:", error);
-    return NextResponse.json<ApiResponse>(
-      {
-        message: "An error occurred",
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error"
-      },
-      { status: 500 }
-    );
-  }
-}
+    const updatedUser = await User.findByIdAndUpdate(user._id, { $inc: { dailyQuotaUsed: 1 } }, { new: true });
+    console.log("\n\nUser daily quota used:", updatedUser.dailyQuotaUsed);
+    console.log("Shortened URL created:", newUrl);
 
-export async function GET() {
-  try {
-    console.log(`GET /api/urlshortener/stats Called`);
-
-    const [totalShortenedURLs, totalClicksResult] = await Promise.all([
-      Url.aggregate([{ $group: { _id: null, totalShortenedURLs: { $sum: 1 } } }
-      ]),
-      Url.aggregate([{ $group: { _id: null, totalClicks: { $sum: "$click" } } }
-      ])
-    ]);
-    const totalClicks = totalClicksResult[0]?.totalClicks ?? 0;
-    const totalShortenedURLsCount: number = totalShortenedURLs[0]?.totalShortenedURLs ?? 0;
-    const response = {
-      totalClicks,
-      totalShortenedURLsCount,
-      documentation,
-      help,
-      howtouse
-    };
-    console.log(`Total Clicks: ${totalClicks}, Total Shortened URLs: ${totalShortenedURLsCount}`);
-    return NextResponse.json(response);
+    return NextResponse.json({ message: "Success", success: true, shortenURL: `${ORIGIN}/${shortenURL}` });
   } catch (error) {
-    console.error("Error fetching URL statistics:", error);
-    return NextResponse.json(
-      { error: `An error occurred: ${(error as Error).message}` },
-      { status: 500 }
-    );
+    console.error("Error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ message: "An error occurred", success: false, error: errorMessage }, { status: 500 });
   }
 }

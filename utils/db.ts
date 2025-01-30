@@ -1,16 +1,35 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-let connected = false;
-const connectDB = async () => {
-    if (connected) return;
-    connected = true;
+export const connectDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URI!);
-        console.log("MongoDb is connected successfully");
-    } catch (error: any) {
-        console.log("MongoDb is not connected successfully");
-        console.log(error.message);
+        if (mongoose.connection.readyState === 0) {
+            const mongoUri = process.env.MONGO_URI;
+            if (!mongoUri) {
+                throw new Error('MONGO_URI is not defined');
+            }
+            await mongoose.connect(mongoUri);
+            console.log('MongoDB connected successfully');
+        } else {
+            console.log('MongoDB already connected');
+        }
     }
-};
-export default connectDB;
+    catch (error) {
+        console.error('Error connecting to MongoDB: ', error);
+        process.exit(1);
+    }
+}
 
+export const disconnectDB = async () => {
+    try {
+        if (mongoose.connection.readyState === 1) {
+            await mongoose.disconnect();
+            console.log('MongoDB disconnected successfully');
+        } else {
+            console.log('MongoDB already disconnected');
+        }
+    }
+    catch (error) {
+        console.error('Error disconnecting from MongoDB: ', error);
+        process.exit(1);
+    }
+}
