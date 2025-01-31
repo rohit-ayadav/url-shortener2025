@@ -4,6 +4,8 @@ import Credentials from 'next-auth/providers/credentials';
 import GithubProvider from 'next-auth/providers/github';
 import { User } from '@/models/User';
 import { connectDB } from '@/utils/db';
+import sendEmail from './action/sendEmail';
+import { generateEmailTemplate } from './lib/EmailTemplate';
 
 export const authOptions = {
     providers: [
@@ -93,6 +95,13 @@ export const authOptions = {
 
             try {
                 const existingUser = await User.findOne({ email });
+                sendEmail({
+                    from: '"RUShort Authentication Team" <rohitkuyada@gmail.com>',
+                    to: email,
+                    subject: 'New Login Detected for your RUShort Account',
+                    text: `Hello ${user.user.name},\n\nA new login was detected for your RUShort account. If this was you, you can ignore this email. If this was not you, please contact us immediately at resourcesandupdates@gmail.com.\n\nBest,\nRUShort Team`,
+                    html: generateEmailTemplate("newLogin", { name: user.user.name, device: user.user.agent, location: "Earth, Milky Way", datetime: new Date().toLocaleString() }),
+                });
                 if (existingUser) {
                     existingUser.provider = user?.account?.provider || existingUser.provider;
                     if (profile) {
@@ -109,6 +118,13 @@ export const authOptions = {
                 });
 
                 await newUser.save();
+                sendEmail({
+                    from: "RUShort <rohitkuyada@gmail.com>",
+                    to: user.email,
+                    subject: "Welcome to RUShort",
+                    message: "Welcome to RUShort",
+                    html: generateEmailTemplate("welcome", { name: user.name }),
+                });
                 if (!process.env.NEXTAUTH_SECRET) {
                     return false;
                 }

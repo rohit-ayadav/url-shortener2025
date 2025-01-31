@@ -25,36 +25,24 @@ const AuthPages = () => {
         setFormData,
         handleSubmit,
         toggleView,
+        redirect,
+        setRedirect,
+        handleSendOtp,
+        showOtpInput,
+        otpSending,
     } = useAuth();
 
-    const [showOtpInput, setShowOtpInput] = React.useState(false);
-    const [otpSending, setOtpSending] = React.useState(false);
-    const [otp, setOtp] = React.useState('');
+
 
     const params = useSearchParams();
     useEffect(() => {
         if (params.has('signup')) {
             toggleView();
         }
+        setRedirect(params.get('redirect') || null);
     }, [params]);
 
 
-    const handleSendOtp = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<void> => {
-        e.preventDefault();
-        if (!formData.email) {
-            // Show error that email is required
-            return;
-        }
-        setOtpSending(true);
-        // Add your OTP sending logic here
-        try {
-            // Simulate OTP sending
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            setShowOtpInput(true);
-        } finally {
-            setOtpSending(false);
-        }
-    };
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
@@ -77,7 +65,7 @@ const AuthPages = () => {
                             {/* Social Auth Buttons */}
                             <div className="grid grid-cols-2 gap-4">
                                 <Button
-                                    onClick={async () => await signIn('google')}
+                                    onClick={async () => await signIn('google', { callbackUrl: `/${redirect ? redirect : 'dashboard'}` })}
                                     variant="outline"
                                     type="button"
                                     className="w-full border-blue-200 hover:bg-blue-50"
@@ -86,7 +74,7 @@ const AuthPages = () => {
                                     Google
                                 </Button>
                                 <Button
-                                    onClick={async () => await signIn('github')}
+                                    onClick={async () => await signIn('github', { callbackUrl: `/${redirect ? redirect : 'dashboard'}` })}
                                     variant="outline"
                                     type="button"
                                     className="w-full border-blue-200 hover:bg-blue-50"
@@ -170,8 +158,8 @@ const AuthPages = () => {
                                     <Input
                                         id="otp"
                                         type="text"
-                                        value={otp}
-                                        onChange={(e) => setOtp(e.target.value)}
+                                        value={formData.otp}
+                                        onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
                                         className="border-blue-100 focus:border-blue-500"
                                         placeholder="Enter 6-digit OTP"
                                         maxLength={6}
@@ -293,7 +281,7 @@ const AuthPages = () => {
                     </CardFooter>
                 </Card>
             </div>
-        </div>
+        </div >
     );
 };
 

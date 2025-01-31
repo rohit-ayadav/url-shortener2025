@@ -4,6 +4,7 @@ import { getToken } from "next-auth/jwt";
 export async function middleware(req: NextRequest) {
     const secret = process.env.NEXTAUTH_SECRET
     const { pathname } = req.nextUrl || { pathname: '' };
+    console.log(`\n\nPathname: ${pathname}\n\n`);
 
     const publicRoutes = ["/", "/about", "/contact", "/auth", '/pricing', '/features'];
     const adminRoutes = ["/admin"];
@@ -12,13 +13,16 @@ export async function middleware(req: NextRequest) {
     if (publicRoutes.includes(pathname)) {
         return NextResponse.next();
     }
+    if (pathname.startsWith('/auth')) {
+        return NextResponse.next();
+    }
 
     const token = await getToken({ req, secret });
     if (!token) {
         const loginUrl = new URL("/auth", req.url);
         loginUrl.searchParams.set(
-            "message",
-            "You must be logged in to access this page."
+            "redirect",
+            pathname
         );
         return NextResponse.redirect(loginUrl);
     }

@@ -1,17 +1,16 @@
 "use client";
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import React, { useEffect } from 'react'
 import { useState } from 'react'
-import { Toaster } from 'react-hot-toast';
-import { toast } from 'react-toastify';
+import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { getSessionAtHome } from '@/auth';
 
 interface AuthFormData {
     email: string;
     password: string;
     confirmPassword: string;
     name: string;
+    otp: string;
 }
 
 const useAuth = () => {
@@ -25,18 +24,26 @@ const useAuth = () => {
         password: '',
         confirmPassword: '',
         name: '',
+        otp: ''
     });
+    const [redirect, setRedirect] = useState<string | null>(null);
     const router = useRouter();
+    const { data: session, status } = useSession();
+    const toast = useToast();
+    const [showOtpInput, setShowOtpInput] = React.useState(false);
+    const [otpSending, setOtpSending] = React.useState(false);
 
-    // useEffect(() => {
-    //     const fetchSession = async () => {
-    //         const session = await getSessionAtHome();
-    //         if (session) {
-    //             router.push('/profile');
-    //         }
-    //     };
-    //     fetchSession();
-    // }, []);
+    useEffect(() => {
+        if (session && status === 'authenticated') {
+            toast.toast({
+                title: 'You are already logged in',
+                description: "Redirecting to dashboard...",
+                duration: 5000,
+                variant: 'default',
+            })
+            router.push('/dashboard?you-are-already-logged-in');
+        }
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -63,10 +70,14 @@ const useAuth = () => {
                 const result = await signIn('credentials', {
                     email: formData.email,
                     password: formData.password,
-                    redirect: false,
+                    redirect: true,
+                    callbackUrl: `/${redirect || 'dashboard'}`,
                 });
                 if (result?.ok) {
-                    toast.success('Sign in successful');
+                    toast.toast({
+                        title: 'Sign in successful',
+                        description: 'You have successfully signed in.',
+                    });
                     setSuccess('Sign in successful');
                     if (result.ok) {
                         router.push('/profile');
@@ -88,6 +99,7 @@ const useAuth = () => {
                         email: formData.email,
                         password: formData.password,
                         name: formData.name,
+                        otp: formData.otp,
                     }),
                 });
 
@@ -95,7 +107,11 @@ const useAuth = () => {
                 if (!response.ok) {
                     throw new Error(data.message || 'Something went wrong');
                 }
-                toast.success('Account created. Please sign in.');
+                toast.toast({
+                    title: 'Account created',
+                    description: 'Your account has been created successfully.',
+                    variant: 'default',
+                })
                 setSuccess('Account created. Please sign in.');
                 setIsLogin(true);
             }
@@ -118,7 +134,53 @@ const useAuth = () => {
             password: '',
             confirmPassword: '',
             name: '',
+            otp: ''
         });
+    };
+    const handleSendOtp = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>): Promise<void> => {
+        e.preventDefault();
+        if (!formData.email || !formData.name) {
+            setError('Please enter your name and email');
+            toast.toast({
+                title: 'Email required',
+                description: 'Please enter your email to receive OTP',
+                variant: 'destructive',
+            });
+            return;
+        }
+        setError(null);
+        setOtpSending(true);
+        try {
+            const response = await fetch('/api/auth/sendOtp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: formData.email,
+                    name: formData.name,
+                }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || 'Something went wrong');
+            }
+            setShowOtpInput(true);
+            toast.toast({
+                title: 'OTP sent',
+                description: 'OTP has been sent to your email',
+                variant: 'default',
+            });
+        } catch (err) {
+            if (err instanceof Error) {
+                setError(`${err.message}`);
+            } else {
+                setError('An unknown error occurred');
+            }
+        } finally {
+            setOtpSending(false);
+        }
     };
 
     return {
@@ -133,6 +195,11 @@ const useAuth = () => {
         setFormData,
         handleSubmit,
         toggleView,
+        redirect,
+        setRedirect,
+        handleSendOtp,
+        showOtpInput,
+        otpSending,
     };
 }
 
