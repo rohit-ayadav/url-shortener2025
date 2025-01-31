@@ -15,9 +15,10 @@ export async function middleware(req: NextRequest) {
     }
     if (pathname.startsWith('/auth')) {
         return NextResponse.next();
-    } 
+    }
 
     const token = await getToken({ req, secret });
+    console.log("Token in middleware:", token);
     if (!token) {
         const loginUrl = new URL("/auth", req.url);
         loginUrl.searchParams.set(
