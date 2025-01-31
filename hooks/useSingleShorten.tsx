@@ -1,22 +1,35 @@
-import { createShortUrl } from '@/components/createShortUrl';
 import { isValidURL } from '@/utils/utils';
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useToast } from './use-toast';
-
+import { ToastAction } from '@/components/ui/toast';
+import { useAlias } from './useAlias';
 
 const useSingleShorten = () => {
     const [url, setUrl] = React.useState('');
-    const [alias, setAlias] = React.useState('');
-    const [aliasError, setAliasError] = React.useState('');
     const [loading, setLoading] = React.useState(false);
     const [length, setLength] = React.useState(4);
-    const [prefix, setPrefix] = React.useState('');
     const [expirationDate, setExpirationDate] = React.useState<Date | null>(null);
     const [error, setError] = React.useState('');
     const [shortenedURLs, setShortenedURLs] = React.useState<{ original: string, shortened: string, expiresAt?: string }[]>([]);
     const toast = useToast();
     const [showQR, setShowQR] = React.useState(false);
     const [selectedURL, setSelectedURL] = React.useState('');
+    const { alias, setAlias, aliasError, setAliasError, prefix, setPrefix } = useAlias();
+
+    useEffect(() => {
+        const TotalLength = alias.length + prefix.length + length;
+        if (TotalLength > 32) {
+            setAliasError('Total length of alias, prefix and length should not exceed 32 characters');
+            toast.toast({
+                title: 'Error',
+                description: 'Total length of alias, prefix and length should not exceed 32 characters',
+                variant: 'destructive'
+            });
+            setAlias(alias.slice(0, 32 - prefix.length - length));
+        } else {
+            setAliasError('');
+        }
+    }, [alias, prefix, length]);
 
     const handleShorten = async () => {
         setError('');
@@ -56,7 +69,7 @@ const useSingleShorten = () => {
         setLoading(true);
         try {
 
-            const shortened = await createShortUrl(url, alias, prefix, length, expirationDate);
+            const shortened = await callAPI(url, alias, prefix, length, expirationDate);
             setShortenedURLs([{ original: url, shortened, expiresAt: expirationDate?.toISOString() }, ...shortenedURLs]);
             // setUrl('');
             setError('');
@@ -71,6 +84,63 @@ const useSingleShorten = () => {
             setLoading(false);
         }
     };
+
+    const callAPI = async (url: string, alias: string, prefix: string, length: number, expirationDate: Date | null) => {
+        try {
+            console.log(`\n\ncallAPI Called with: ${url}, ${alias}, ${prefix}, ${length}, ${expirationDate}`);
+            const response = await fetch('/api/urlshortener', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    originalUrl: url,
+                    alias,
+                    prefix,
+                    length,
+                    expirationDate,
+                }),
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message);
+            }
+
+            toast.toast({
+                title: 'Success',
+                description: data.message,
+            });
+            return data.shortenURL;
+        } catch (err) {
+            setError(`Failed to create short URL: ${(err as Error).message}`);
+
+            toast.toast({
+                title: 'Failed to create short URL',
+                description: `${(err as Error).message}`,
+                action: <ToastAction
+                    altText='Try again'
+                    onClick={() => {
+                        setError('');
+                        handleShorten();
+                    }}>Try again</ToastAction>,
+                variant: 'destructive',
+            });
+            if ((err as Error).message === 'Daily quota exceeded, Kindly upgrade to premium') {
+                toast.toast({
+                    title: 'Daily quota exceeded',
+                    description: 'Kindly upgrade to premium',
+                    variant: 'destructive',
+                    action: <ToastAction
+                        altText='Upgrade now'
+                        onClick={() => {
+                            setError('');
+                            window.open('/pricing', '_blank');
+                        }}>Upgrade now</ToastAction>,
+                });
+            }
+            throw err;
+        }
+    }
 
     const isUrlValid: boolean = url.length === 0 || isValidURL(url);
 

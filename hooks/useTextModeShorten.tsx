@@ -15,8 +15,6 @@ const useTextModeShorten = () => {
     const [shortenedURLs, setShortenedURLs] = useState<{ original: string; shortened: string; expiresAt?: string }[]>([]);
     const [error, setError] = useState('');
     const toast = useToast();
-    const [showQR, setShowQR] = useState(false);
-    const [selectedURL, setSelectedURL] = useState('');
 
     const callAPI = async (url: string, alias: string, prefix: string, length: number, expirationDate: Date | null) => {
         try {
@@ -155,40 +153,6 @@ const useTextModeShorten = () => {
         }
     };
 
-    const handleCopy = async (url: string) => {
-        await navigator.clipboard.writeText(url);
-        toast.toast({
-            title: 'Copied to clipboard',
-            description: 'The URL has been copied to your clipboard',
-        });
-    };
-
-    const handleOpen = (url: string) => {
-        // add https if not present
-        if (!url.startsWith('http')) {
-            url = `https://${url}`;
-        }
-        window.open(url, '_blank');
-    };
-
-    const handleShare = async (url: string) => {
-        if (navigator.share) {
-            if (!url.startsWith('http')) {
-                url = `https://${url}`;
-            }
-            try {
-                await navigator.share({ url });
-                toast.toast({
-                    title: 'Success',
-                    description: 'URL shared successfully',
-                    variant: 'default',
-                });
-            } catch (err) {
-                console.error('Error sharing:', err);
-            }
-        }
-    };
-
     return {
         text,
         setText,
@@ -198,21 +162,13 @@ const useTextModeShorten = () => {
         setLength,
         prefix,
         setPrefix,
-        expirationDate,
         setExpirationDate,
         shortenedURLs,
         error,
-        showQR,
-        setShowQR,
-        selectedURL,
-        setSelectedURL,
         handleProcess,
         handlePaste,
         handleClear,
         handleCopyProcessed,
-        handleCopy,
-        handleOpen,
-        handleShare,
     };
 }
 

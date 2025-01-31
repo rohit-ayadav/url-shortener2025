@@ -12,10 +12,6 @@ export const useAlias = (initialAlias: string = '') => {
       setAliasError('');
       return true;
     }
-    // if (value.length < 4) {
-    //   setAliasError('Alias or Prefix must be at least 4 characters');
-    //   return false;
-    // }
     if (value.length > 50) {
       setAliasError('Alias or Prefix must be less than 50 characters');
       return false;
@@ -38,5 +34,5 @@ export const useAlias = (initialAlias: string = '') => {
     return () => clearTimeout(timeout);
   }, [alias, prefix]);
 
-  return { alias, setAlias, aliasError, prefix, setPrefix };
+  return { alias, setAlias, aliasError, setAliasError, prefix, setPrefix };
 };

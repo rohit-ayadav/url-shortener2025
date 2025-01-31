@@ -1,24 +1,12 @@
-
-
-// src/components/url-shortener/utils.ts
-// export const isValidURL = (str: string): boolean => {
-//   try {
-//     return !!new URL(str);
-//   } catch {
-//     return false;
-//   }
-// };
-
 export const isValidURL = (str: string): boolean => {
   return /^(ftp|http|https):\/\/[^ "]+$/.test(str);
 };
 
 export const formatAlias = (alias: string): string => {
   let transformedAlias = alias.trim().toLowerCase();
-  transformedAlias = transformedAlias.replace(/\s/g, '-'); // Replace spaces with hyphens
-  transformedAlias = transformedAlias.replace(/[^a-z0-9-_]/g, ''); // Remove invalid characters
-  transformedAlias = transformedAlias.replace(/-+/g, '-'); // Remove consecutive hyphens
-  // transformedAlias = transformedAlias.replace(/^-|-$/g, ''); // Remove leading and trailing hyphens
+  transformedAlias = transformedAlias.replace(/\s/g, '-');
+  transformedAlias = transformedAlias.replace(/[^a-z0-9-_]/g, '');
+  transformedAlias = transformedAlias.replace(/-+/g, '-');
   return transformedAlias.slice(0, 50);
 };
 

@@ -28,11 +28,11 @@ export const authOptions = {
                 }
                 const user = await User.findOne({ email: credentials.email });
                 if (!user) {
-                    return null; // User not found
+                    return null;
                 }
                 const isValid = await user.comparePassword(credentials.password);
                 if (!isValid) {
-                    return null; // Invalid credentials
+                    return null;
                 }
                 return {
                     id: user._id.toString(),
@@ -48,7 +48,7 @@ export const authOptions = {
     session: {
         // strategy: 'jwt',
         strategy: 'jwt',
-        maxAge: 30 * 24 * 60 * 60,
+        maxAge: 30 * 24 * 60 * 60, // 
     },
     jwt: {
         secret: process.env.NEXTAUTH_SECRET,
