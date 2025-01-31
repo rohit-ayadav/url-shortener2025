@@ -4,6 +4,8 @@ import Credentials from 'next-auth/providers/credentials';
 import GithubProvider from 'next-auth/providers/github';
 import { User } from '@/models/User';
 import { connectDB } from '@/utils/db';
+import { pages } from 'next/dist/build/templates/app-page';
+import { signOut } from 'next-auth/react';
 
 export const authOptions = {
     providers: [
@@ -56,6 +58,10 @@ export const authOptions = {
 
     },
     secret: process.env.NEXTAUTH_SECRET,
+    pages: {
+        signIn: '/auth',
+        signOut: '/auth/signout',
+    },
     callbacks: {
         async jwt({ token, user, account, trigger }) {
             if (user) {
@@ -105,13 +111,18 @@ export const authOptions = {
                 });
 
                 await newUser.save();
+                if (!process.env.NEXTAUTH_SECRET) {
+                    return false;
+                }
+                if (!process.env.NEXTAUTH_URL) {
+                    return false;
+                }
                 return true;
 
             } catch (error) {
                 console.error(error);
                 return false;
             }
-            return true;
         },
     },
 };
