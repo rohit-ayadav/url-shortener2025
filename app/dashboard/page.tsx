@@ -28,7 +28,6 @@ const DashboardPage = () => {
       const userAnalytics = await getClickAnalytics(userData?.email);
       setAnalytics(userAnalytics);
     };
-
     initializeDashboard();
   }, []);
 
