@@ -15,7 +15,7 @@ export async function middleware(req: NextRequest) {
     }
     if (pathname.startsWith('/auth')) {
         return NextResponse.next();
-    }
+    } 
 
     const token = await getToken({ req, secret });
     if (!token) {
