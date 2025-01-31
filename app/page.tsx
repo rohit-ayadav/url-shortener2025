@@ -11,8 +11,6 @@ import { useRouter } from 'next/navigation';
 
 const HomePage = () => {
   const router = useRouter();
-
-  // Enhanced scroll behavior with smooth scrolling and offset
   const scrollToShortener = () => {
     const shortenerSection = document.getElementById('shortener-section');
     if (shortenerSection) {

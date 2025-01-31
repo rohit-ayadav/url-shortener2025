@@ -1,7 +1,7 @@
 // components/profile/SecuritySettings.tsx
 import { UserProfile } from "@/types/types";
 import { PasswordChangeCard } from "./PasswordChangeCard";
-import { TwoFactorAuthCard } from "../../TwoFactorAuthCard";
+import { TwoFactorAuthCard } from "./TwoFactorAuthCard";
 
 interface SecuritySettingsProps {
     profile: UserProfile;
