@@ -4,18 +4,16 @@ import Credentials from 'next-auth/providers/credentials';
 import GithubProvider from 'next-auth/providers/github';
 import { User } from '@/models/User';
 import { connectDB } from '@/utils/db';
-import { pages } from 'next/dist/build/templates/app-page';
-import { signOut } from 'next-auth/react';
 
 export const authOptions = {
     providers: [
         GoogleProvider({
-            clientId: process.env.GOOGLE_ID || 'default-google-id',
-            clientSecret: process.env.GOOGLE_SECRET || 'default-google-secret',
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         }),
         GithubProvider({
-            clientId: process.env.GITHUB_ID || 'default-github-id',
-            clientSecret: process.env.GITHUB_SECRET || 'default-github-secret',
+            clientId: process.env.GITHUB_ID,
+            clientSecret: process.env.GITHUB_SECRET,
         }),
         Credentials({
             name: 'Credentials',
