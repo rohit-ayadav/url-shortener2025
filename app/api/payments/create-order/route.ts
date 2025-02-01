@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const { amount, currency, paymentMethod } = await request.json();
     try {
         const order = await razorpay.orders.create({
-            amount,
+            amount: amount * 100,
             currency,
             receipt: "receipt#1",
             payment_capture: true,

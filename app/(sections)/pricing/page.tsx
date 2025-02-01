@@ -109,16 +109,19 @@ const PricingPage = () => {
         setPaymentError("");
 
         try {
-            const res = await fetch("/api/create-order", {
+            const body = {
+                amount: plan.price,
+                currency: "INR",
+                paymentMethod: "razorpay",
+            };
+            console.log(`Creating order for ${plan.name} plan...:`, body);
+            
+            const res = await fetch("/api/payments/create-order", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    amount: plan.price,
-                    currency: "INR",
-                    paymentMethod: "razorpay",
-                }),
+                body: JSON.stringify(body),
             });
 
             const data = await res.json();
@@ -140,7 +143,7 @@ const PricingPage = () => {
                             signature: response.razorpay_signature,
                             plan: plan.id,
                         };
-                        const result = await fetch("/api/verify-payment", {
+                        const result = await fetch("/api/payments/verify-payment", {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
