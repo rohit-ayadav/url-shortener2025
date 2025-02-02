@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 import { useSession } from 'next-auth/react';
+import { useToast } from '@/hooks/use-toast';
 
 interface PricingPlan {
     id: string;
@@ -35,14 +36,14 @@ const PricingPage = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentError, setPaymentError] = useState("");
     const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null);
-
+    const toast = useToast();
     const { data: session, status } = useSession();
 
     const pricingPlans: PricingPlan[] = [
         {
             id: 'basic',
             name: 'Basic',
-            price: 99,
+            price: 1,
             duration: 'month',
             buttonText: 'Get Started',
             buttonVariant: 'outline',
@@ -113,9 +114,10 @@ const PricingPage = () => {
                 amount: plan.price,
                 currency: "INR",
                 paymentMethod: "razorpay",
+                email: session?.user?.email,
             };
             console.log(`Creating order for ${plan.name} plan...:`, body);
-            
+
             const res = await fetch("/api/payments/create-order", {
                 method: "POST",
                 headers: {
@@ -136,13 +138,16 @@ const PricingPage = () => {
                     image: "/favicon.ico",
                     order_id: data.orderid,
                     handler: async function (response: any) {
-                        // Save the payment details and upgrade the user's plan
+                        // Verify the payment
+                        console.log("Payment response:", response);
                         const paymentData = {
                             orderId: data.orderid,
                             paymentId: response.razorpay_payment_id,
                             signature: response.razorpay_signature,
                             plan: plan.id,
+                            email: session?.user?.email,
                         };
+                        console.log("Verifying payment...", paymentData);
                         const result = await fetch("/api/payments/verify-payment", {
                             method: "POST",
                             headers: {
@@ -150,21 +155,23 @@ const PricingPage = () => {
                             },
                             body: JSON.stringify(paymentData),
                         });
-                        if (result.ok) {
-                            // Payment successful
-                            window.location.href = "/dashboard";
-                        }
-                        else {
-                            setPaymentError("Failed to verify payment. Please try again later.");
+                        const dataVerify = await result.json();
+                        if (!result.ok) {
+                            setPaymentError(data.message);
+                            toast.toast({
+                                title: "Payment Verification Failed...",
+                                description: dataVerify.message,
+                                variant: 'destructive'
+                            })
                         }
                     },
                     prefill: {
-                        name: "RUShort User",
-                        email: "",
-                        contact: "",
+                        name: session?.user?.name,
+                        email: session?.user?.email,
+                        contact: "9999999999"
                     },
                     theme: {
-                        color: "#2563EB",
+                        color: "#2563EB", // primary color
                     },
                 };
 
@@ -172,6 +179,11 @@ const PricingPage = () => {
                 rzp.open();
             } else {
                 setPaymentError("Failed to create order. Please try again.");
+                toast.toast({
+                    title: "Payment Error",
+                    description: data.message,
+                    variant: 'destructive'
+                })
             }
         } catch (error) {
             setPaymentError("An error occurred. Please try again later.");

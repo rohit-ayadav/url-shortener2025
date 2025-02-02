@@ -6,9 +6,32 @@ const PaymentSchema = new mongoose.Schema({
         ref: "User",
         required: true,
     },
+    orderId: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    paymentId: {
+        type: String,
+        unique: true,
+        sparse: true,
+    },
+    razorpaySignature: {
+        type: String,
+    },
+    subscriptionId: {
+        type: String,
+        unique: true,
+        sparse: true,
+    },
     amount: {
         type: Number,
         required: true,
+    },
+    date: {
+        type: Date,
+        required: true,
+        default: Date.now,
     },
     currency: {
         type: String,
@@ -18,22 +41,24 @@ const PaymentSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    paymentDate: {
-        type: Date,
-        required: true,
-    },
     status: {
         type: String,
         required: true,
         enum: ["pending", "paid", "failed"],
         default: "pending",
     },
-    createdAt: {
+    expiresAt: {
         type: Date,
-        required: true,
+    },
+    paymentDate: {
+        type: Date,
         default: Date.now,
     },
-})
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+});
 
 const Payment = mongoose.models.Payment || mongoose.model("Payment", PaymentSchema);
 export default Payment;

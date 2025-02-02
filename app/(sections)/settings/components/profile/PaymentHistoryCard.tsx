@@ -22,7 +22,7 @@ export function PaymentHistoryCard({ payments }: PaymentHistoryCardProps) {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Date</TableHead>
-                            <TableHead>Description</TableHead>
+                            <TableHead>Mode</TableHead>
                             <TableHead>Amount</TableHead>
                             <TableHead>Status</TableHead>
                         </TableRow>
@@ -34,7 +34,7 @@ export function PaymentHistoryCard({ payments }: PaymentHistoryCardProps) {
                                     {new Date(payment.date).toLocaleDateString()}
                                 </TableCell>
                                 <TableCell>{payment.description}</TableCell>
-                                <TableCell>${payment.amount}</TableCell>
+                                <TableCell>₹{payment.amount}</TableCell>
                                 <TableCell>
                                     <Badge variant={
                                         payment.status === 'succeeded' ? 'default' :

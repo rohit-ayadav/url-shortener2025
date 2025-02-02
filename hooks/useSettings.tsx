@@ -1,44 +1,109 @@
-import React from 'react'
+"use client";
+import React, { useEffect } from 'react'
 import { useState } from 'react';
 import { UserProfile, PaymentHistory } from '@/types/types';
 import { useToast } from './use-toast';
+import { getPaymentHistory } from '@/action/getPaymentHistory';
+import { useSession } from 'next-auth/react';
+import { doUpdatePassword } from '@/action/doUpdatePassword';
+import getProfileData from '@/action/getProfileData';
 
 const useSettings = () => {
+    const { data: session, status } = useSession();
+    const toast = useToast();
     const [profile, setProfile] = useState<UserProfile>({
-        name: 'John Doe',
-        email: 'john@example.com',
-        avatar: '/placeholder-avatar.jpg',
+        name: '',
+        email: '',
+        avatar: '',
         subscription: {
             plan: 'free',
-            expiryDate: '2024-12-31',
-            status: 'active'
+            expiryDate: '',
+            status: 'active',
         },
         twoFactorEnabled: false,
-        apiKey: 'sk_test_123456789',
+        apiKey: '********',
         apiUsage: {
-            total: 1234,
-            limit: 10000
+            total: 100,
+            limit: 0,
         }
     });
 
     const [isLoading, setIsLoading] = useState(false);
     const [showApiKey, setShowApiKey] = useState(false);
-    const [payments, setPayments] = useState<PaymentHistory[]>([
-        {
-            id: '1',
-            date: '2024-01-15',
-            amount: 29.99,
-            status: 'succeeded',
-            description: 'Premium Plan - Monthly'
-        },
-        {
-            id: '2',
-            date: '2023-12-15',
-            amount: 29.99,
-            status: 'succeeded',
-            description: 'Premium Plan - Monthly'
-        }
-    ]);
+    const [payments, setPayments] = useState<PaymentHistory[]>([]);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            setIsLoading(true);
+            try {
+                const email = session?.user?.email;
+                console.log("\n\nEmail:", email);
+                if (email) {
+                    const data = await getProfileData(email);
+                    if (data) {
+                        const parsedData = JSON.parse(data);
+                        const { profile, payments } = parsedData;
+                        console.log("\n\nProfile:", profile);
+                        console.log("\n\nPayments:", payments);
+                        setProfile(profile);
+                        setPayments(payments);
+                    } else {
+                        toast.toast({
+                            title: "Error",
+                            description: "Failed to fetch profile data",
+                            variant: "destructive",
+                        });
+                    }
+                    setProfile(profile);
+                    setPayments(payments);
+                } else {
+                    toast.toast({
+                        title: "Error",
+                        description: "User email is not available",
+                        variant: "destructive",
+                    });
+                }
+            } catch (error) {
+                toast.toast({
+                    title: "Error",
+                    description: "Failed to fetch profile data",
+                    variant: "destructive",
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        if (status !== 'loading') fetchProfile();
+    }, [session, status]);
+
+    useEffect(() => {
+        const fetchPaymentHistory = async () => {
+            setIsLoading(true);
+            try {
+                const email = session?.user?.email;
+                console.log("\n\nEmail:", email);
+                if (email) {
+                    const paymentHistory = await getPaymentHistory(email);
+                    setPayments(paymentHistory);
+                } else {
+                    toast.toast({
+                        title: "Error",
+                        description: "User email is not available",
+                        variant: "destructive",
+                    });
+                }
+            } catch (error) {
+                toast.toast({
+                    title: "Error",
+                    description: "Failed to fetch payment history",
+                    variant: "destructive",
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        if (status !== 'loading') fetchPaymentHistory();
+    }, [session, status]);
 
     // Password change state
     const [passwordForm, setPasswordForm] = useState({
@@ -50,18 +115,14 @@ const useSettings = () => {
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [showQrCode, setShowQrCode] = useState(false);
     const [verificationCode, setVerificationCode] = useState('');
-    const { toast } = useToast();
 
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
-                setProfile(prev => ({
-                    ...prev,
-                    avatar: e.target?.result as string
-                }));
-                toast({
+
+                toast.toast({
                     title: "Success",
                     description: "Profile picture updated successfully",
                 });
@@ -71,37 +132,34 @@ const useSettings = () => {
     };
 
     const handlePasswordChange = async () => {
+
         if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-            toast({
+            toast.toast({
                 title: "Error",
                 description: "New passwords do not match",
                 variant: "destructive",
             });
             return;
         }
-
-        setIsChangingPassword(true);
-        try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            toast({
-                title: "Success",
-                description: "Password updated successfully",
-            });
-            setPasswordForm({
-                currentPassword: '',
-                newPassword: '',
-                confirmPassword: ''
-            });
-        } catch (error) {
-            toast({
+        const email = session?.user?.email;
+        if (!email) {
+            toast.toast({
                 title: "Error",
-                description: "Failed to update password",
+                description: "User email is not available",
                 variant: "destructive",
             });
-        } finally {
-            setIsChangingPassword(false);
+            return;
         }
+
+        setIsChangingPassword(true);
+        const { success, error } = await doUpdatePassword(passwordForm.currentPassword, passwordForm.newPassword, email);
+        console.log(`\n\nSuccess: ${success}\nError: ${error}\n\n`);
+        toast.toast({
+            title: `${success ? "Password Updated Successfully" : "Error"}`,
+            description: `${success ? success : error}`,
+            variant: `${success ? "default" : "destructive"}`,
+        });
+        setIsChangingPassword(false);
     };
 
     const handleEnable2FA = async () => {
@@ -120,12 +178,9 @@ const useSettings = () => {
         try {
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1500));
-            setProfile(prev => ({
-                ...prev,
-                twoFactorEnabled: true
-            }));
+
             setShowQrCode(false);
-            toast({
+            toast.toast({
                 title: "Success",
                 description: "Two-factor authentication enabled successfully",
             });
@@ -139,11 +194,8 @@ const useSettings = () => {
         try {
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1500));
-            setProfile(prev => ({
-                ...prev,
-                apiKey: `sk_test_${Math.random().toString(36).substr(2, 9)}`
-            }));
-            toast({
+
+            toast.toast({
                 title: "Success",
                 description: "API key regenerated successfully",
             });
@@ -153,11 +205,8 @@ const useSettings = () => {
     };
 
     const handleNameUpdate = async (newName: string) => {
-        setProfile(prev => ({
-            ...prev,
-            name: newName
-        }));
-        toast({
+
+        toast.toast({
             title: "Success",
             description: "Name updated successfully",
         });

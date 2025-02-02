@@ -77,8 +77,8 @@ const DashboardPage = () => {
               </CardHeader>
               <CardContent>
                 <UsageMeter
-                  used={user.dailyQuotaUsed}
-                  total={user.dailyQuotaLimit}
+                  used={user.monthlyQuotaUsed}
+                  total={user.monthlyQuotaLimit}
                 />
               </CardContent>
             </Card>

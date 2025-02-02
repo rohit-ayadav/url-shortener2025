@@ -4,7 +4,7 @@ import { getToken } from "next-auth/jwt";
 export async function middleware(req: NextRequest) {
     const secret = process.env.NEXTAUTH_SECRET
     const { pathname } = req.nextUrl || { pathname: '' };
-    console.log(`\n\nPathname: ${pathname}\n\n`);
+    // console.log(`\n\nPathname: ${pathname}\n\n`);
 
     const publicRoutes = ["/", "/about", "/contact", "/auth", '/pricing', '/features'];
     const adminRoutes = ["/admin"];
@@ -18,7 +18,7 @@ export async function middleware(req: NextRequest) {
     }
 
     const token = await getToken({ req, secret });
-    console.log("Token in middleware:", token);
+    // console.log("Token in middleware:", token);
     if (!token) {
         const loginUrl = new URL("/auth", req.url);
         loginUrl.searchParams.set(

@@ -68,8 +68,8 @@ interface User {
     role: 'user' | 'admin';
     subscriptionStatus: 'free' | 'basic' | 'premium';
     subscriptionExpiration: Date | null;
-    dailyQuotaUsed: number;
-    dailyQuotaLimit: number;
+    monthlyQuotaUsed: number;
+    monthlyQuotaLimit: number;
     createdAt: Date;
 }
 

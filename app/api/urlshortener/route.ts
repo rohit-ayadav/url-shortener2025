@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     const user = await User.findOne({ email });
     if (!user) return NextResponse.json({ message: "Login required", success: false }, { status: 401 });
-    if (user.dailyQuotaUsed >= user.dailyQuotaLimit) return NextResponse.json({ message: "Daily quota exceeded, Kindly upgrade to premium", success: false }, { status: 403 });
+    if (user.monthlyQuotaUsed >= user.monthlyQuotaLimit) return NextResponse.json({ message: "Daily quota exceeded, Kindly upgrade to premium", success: false }, { status: 403 });
 
     let shortenURL = alias ? (prefix ? `${prefix}${alias}` : alias) : "";
     if (alias) {
@@ -70,8 +70,8 @@ export async function POST(request: NextRequest) {
     const newUrl = await Url.create({
       originalUrl, shortenURL, createdBy: user._id, click: 0, createdAt: new Date(), expireAt: expirationDate ?? null
     });
-    const updatedUser = await User.findByIdAndUpdate(user._id, { $inc: { dailyQuotaUsed: 1 } }, { new: true });
-    console.log("\n\nUser daily quota used:", updatedUser.dailyQuotaUsed);
+    const updatedUser = await User.findByIdAndUpdate(user._id, { $inc: { monthlyQuotaUsed: 1 } }, { new: true });
+    console.log("\n\nUser daily quota used:", updatedUser.monthlyQuotaUsed);
     console.log("Shortened URL created:", newUrl);
 
     return NextResponse.json({ message: "Success", success: true, shortenURL: `${ORIGIN}/${shortenURL}` });

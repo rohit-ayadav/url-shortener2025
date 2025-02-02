@@ -15,6 +15,7 @@ import {
     AlertTitle,
 } from "@/components/ui/alert";
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 declare global {
     interface Window {
@@ -34,6 +35,7 @@ const PricingPage = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentError, setPaymentError] = useState("");
     const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null);
+    const toast = useToast();
 
     const pricingPlans: PricingPlan[] = [
         {
@@ -129,7 +131,12 @@ const PricingPage = () => {
                 const rzp = new window.Razorpay(options);
                 rzp.open();
             } else {
-                setPaymentError("Failed to create order. Please try again.");
+                setPaymentError(`An error occurred: ${data.message}`);
+                toast.toast({
+                    title: "Payment Error",
+                    description: data.message,
+                    variant: 'destructive'
+                })
             }
         } catch (error) {
             setPaymentError("An error occurred. Please try again later.");

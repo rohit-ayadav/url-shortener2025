@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
     },
     provider: {
         type: String,
-        default: null,
+        default: "Credentials",
     },
     email: {
         type: String,
@@ -27,72 +27,65 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         required: true,
-        enum: ["user", "admin"],
+        enum: ["user", "admin", "moderator"],
         default: "user",
     },
     createdAt: {
         type: Date,
-        required: true,
         default: Date.now,
     },
     subscriptionStatus: {
         type: String,
-        required: true,
-        enum: ["free", "premium"],
+        enum: ["free", "basic", "pro", "enterprise"],
         default: "free",
     },
     subscriptionExpiration: {
         type: Date,
         default: null,
-    } as any,
-    dailyQuotaUsed: {
+    },
+    monthlyQuotaUsed: {
         type: Number,
-        required: true,
         default: 0,
     },
-    dailyQuotaLimit: {
+    monthlyQuotaLimit: {
         type: Number,
-        required: true,
-        default: 10,
+        default: 100,
     },
 });
 
+// Password Hashing Before Saving User
 userSchema.pre("save", async function (next) {
-    const now = new Date();
-
-    if (this.subscriptionExpiration && this.subscriptionExpiration < now) {
-        this.subscriptionStatus = "free";
-        this.dailyQuotaLimit = 10;
-        this.subscriptionExpiration = null;
-    }
-
-    if (this.subscriptionStatus === "premium" && !this.subscriptionExpiration) {
-        this.subscriptionExpiration = new Date();
-        if (this.subscriptionExpiration instanceof Date) {
-            this.subscriptionExpiration.setDate(this.subscriptionExpiration.getDate() + 30);
-        }
-        this.dailyQuotaLimit = 100;
-    }
-
-    if (this.isModified("password")) {
+    if (this.isModified("password") && this.password) {
         try {
             const saltRounds = 10;
-            if (this.password)
-                this.password = await bcrypt.hash(this.password, saltRounds);
-        } catch (error) {
+            this.password = await bcrypt.hash(this.password, saltRounds);
+        } catch (error: any) {
             return next(error as mongoose.CallbackError);
         }
     }
     next();
 });
 
-userSchema.methods.comparePassword = async function (password: string) {
-    if (typeof this.password !== "string") {
-        throw new Error("Password is not a string");
+// Function to Check Subscription Expiry
+userSchema.methods.checkSubscriptionExpiry = async function () {
+    if (this.subscriptionStatus === "premium" && this.subscriptionExpiration) {
+        const now = new Date();
+        if (this.subscriptionExpiration < now) {
+            this.subscriptionStatus = "free";
+            this.monthlyQuotaLimit = 100;
+            this.subscriptionExpiration = null;
+            await this.save();
+        }
     }
-    return await bcrypt.compare(password, this.password);
 };
 
+// Compare Password for Login
+userSchema.methods.comparePassword = async function (password: string) {
+    if (!this.password) {
+        throw new Error("No password set for this user");
+    }
+    return bcrypt.compare(password, this.password);
+};
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 

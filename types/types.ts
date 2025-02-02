@@ -17,8 +17,8 @@ interface User {
     role: 'user' | 'admin';
     subscriptionStatus: 'free' | 'basic' | 'premium';
     subscriptionExpiration: Date | null;
-    dailyQuotaUsed: number;
-    dailyQuotaLimit: number;
+    monthlyQuotaUsed: number;
+    monthlyQuotaLimit: number;
     createdAt: Date;
 }
 
@@ -27,8 +27,8 @@ interface Analytics {
     totalClick: number;
     subscriptionExpiration: Date | null;
     subscriptionStatus: 'free' | 'basic' | 'premium';
-    dailyQuotaLimit: number;
-    dailyQuotaUsed: number;
+    monthlyQuotaLimit: number;
+    monthlyQuotaUsed: number;
 }
 
 export type { UrlData, User, Analytics };

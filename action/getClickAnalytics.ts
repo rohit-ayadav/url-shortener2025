@@ -21,15 +21,15 @@ async function getClickAnalytics(email: string | undefined) {
         });
         const subscriptionStatus = user?.subscriptionStatus;
         const subscriptionExpiration = user?.subscriptionExpiration;
-        const dailyQuotaUsed = user?.dailyQuotaUsed;
-        const dailyQuotaLimit = user?.dailyQuotaLimit;
+        const monthlyQuotaUsed = user?.monthlyQuotaUsed;
+        const monthlyQuotaLimit = user?.monthlyQuotaLimit;
         const response = {
             totalShorten,
             totalClick,
             subscriptionExpiration,
             subscriptionStatus,
-            dailyQuotaLimit,
-            dailyQuotaUsed,
+            monthlyQuotaLimit,
+            monthlyQuotaUsed,
         }
         return response;
     } catch (err) {
