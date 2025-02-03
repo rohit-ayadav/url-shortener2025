@@ -135,13 +135,13 @@ const PricingPage = () => {
                     currency: "INR",
                     name: "RUShort",
                     description: `Payment for ${plan.name} Plan`,
-                    image: "/favicon.ico",
+                    image: "/android-chrome-512x512.png",
                     order_id: data.orderid,
                     handler: async function (response: any) {
                         // Verify the payment
                         console.log("Payment response:", response);
                         const paymentData = {
-                            orderId: data.orderid,
+                            orderId: response.razorpay_order_id,
                             paymentId: response.razorpay_payment_id,
                             signature: response.razorpay_signature,
                             plan: plan.id,

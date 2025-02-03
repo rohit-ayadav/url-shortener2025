@@ -3,7 +3,6 @@
 "use server";
 import { User } from "@/models/User";
 import { connectDB } from "@/utils/db";
-// import { getSessionAtHome } from "@/auth";
 import { Url } from "@/models/urlShortener";
 import { ObjectId } from "mongoose";
 import { getServerSession } from "next-auth";
@@ -91,7 +90,6 @@ export async function getProfileInfo(email: string): Promise<Response> {
                 })),
             },
         };
-        // console.log("response", response);
         return response;
 
     }

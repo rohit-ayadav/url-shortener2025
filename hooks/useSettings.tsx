@@ -6,7 +6,7 @@ import { useToast } from './use-toast';
 import { getPaymentHistory } from '@/action/getPaymentHistory';
 import { useSession } from 'next-auth/react';
 import { doUpdatePassword } from '@/action/doUpdatePassword';
-import getProfileData from '@/action/getProfileData';
+import { set } from 'mongoose';
 
 const useSettings = () => {
     const { data: session, status } = useSession();
@@ -39,23 +39,19 @@ const useSettings = () => {
                 const email = session?.user?.email;
                 console.log("\n\nEmail:", email);
                 if (email) {
-                    const data = await getProfileData(email);
-                    if (data) {
-                        const parsedData = JSON.parse(data);
-                        const { profile, payments } = parsedData;
-                        console.log("\n\nProfile:", profile);
-                        console.log("\n\nPayments:", payments);
-                        setProfile(profile);
-                        setPayments(payments);
-                    } else {
-                        toast.toast({
-                            title: "Error",
-                            description: "Failed to fetch profile data",
-                            variant: "destructive",
-                        });
+                    const response = await fetch('/api/accounts/getaccinfo', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email }),
+                    });
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch profile data");
                     }
-                    setProfile(profile);
-                    setPayments(payments);
+                    const { profileResponse, paymentsResponse } = await response.json();
+                    setProfile(profileResponse);
+                    setPayments(paymentsResponse);
                 } else {
                     toast.toast({
                         title: "Error",
@@ -121,7 +117,6 @@ const useSettings = () => {
         if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
-
                 toast.toast({
                     title: "Success",
                     description: "Profile picture updated successfully",
