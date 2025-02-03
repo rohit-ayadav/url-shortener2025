@@ -33,6 +33,10 @@ export function ApiKeyCard({ apiKey, isLoading, onRegenerateKey }: ApiKeyCardPro
                     {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                     Regenerate API Key
                 </Button>
+                {/* note that api feature will coming soon */}
+                <CardDescription className="text-sm text-gray-500">
+                    This feature will be available soon
+                </CardDescription>
             </CardContent>
         </Card>
     );
