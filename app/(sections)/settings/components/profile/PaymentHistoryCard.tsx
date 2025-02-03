@@ -21,6 +21,7 @@ export function PaymentHistoryCard({ payments }: PaymentHistoryCardProps) {
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            {/* <TableHead>Id</TableHead> */}
                             <TableHead>Date</TableHead>
                             <TableHead>Mode</TableHead>
                             <TableHead>Amount</TableHead>
@@ -28,8 +29,9 @@ export function PaymentHistoryCard({ payments }: PaymentHistoryCardProps) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
+
                         {payments.map((payment) => (
-                            <TableRow key={payment.id}>
+                            <TableRow key={payment._id.toString()}>
                                 <TableCell>
                                     {new Date(payment.date).toLocaleDateString()}
                                 </TableCell>

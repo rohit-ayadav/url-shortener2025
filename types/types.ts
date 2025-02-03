@@ -34,7 +34,7 @@ interface Analytics {
 export type { UrlData, User, Analytics };
 
 export interface PaymentHistory {
-    id: string;
+    _id: ObjectId;
     date: string;
     amount: number;
     status: 'succeeded' | 'failed' | 'pending';
