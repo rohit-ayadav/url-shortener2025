@@ -2,12 +2,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { UserProfile } from '@/types/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-
+import { useRouter } from 'next/navigation';
 interface SubscriptionCardProps {
     profile: UserProfile;
 }
 
 export function SubscriptionCard({ profile }: SubscriptionCardProps) {
+    const router = useRouter();
     return (
         <Card>
             <CardHeader>
@@ -36,7 +37,8 @@ export function SubscriptionCard({ profile }: SubscriptionCardProps) {
                     </Badge>
                 </div>
                 {profile.subscription.plan !== 'premium' && (
-                    <Button className="w-full">
+                    <Button className="w-full"
+                        onClick={() => router.push('/pricing')}>
                         Upgrade to Premium
                     </Button>
                 )}

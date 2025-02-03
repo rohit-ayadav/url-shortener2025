@@ -3,18 +3,16 @@ import React, { useEffect } from 'react'
 import { useState } from 'react';
 import { UserProfile, PaymentHistory } from '@/types/types';
 import { useToast } from './use-toast';
-import { getPaymentHistory } from '@/action/getPaymentHistory';
 import { useSession } from 'next-auth/react';
 import { doUpdatePassword } from '@/action/doUpdatePassword';
-import { set } from 'mongoose';
 
 const useSettings = () => {
     const { data: session, status } = useSession();
     const toast = useToast();
     const [profile, setProfile] = useState<UserProfile>({
-        name: '',
-        email: '',
-        avatar: '',
+        name: session?.user?.name || '',
+        email: session?.user?.email || '',
+        avatar: session?.user?.image || '',
         subscription: {
             plan: 'free',
             expiryDate: '',
@@ -24,7 +22,7 @@ const useSettings = () => {
         apiKey: '********',
         apiUsage: {
             total: 100,
-            limit: 0,
+            limit: 1000,
         }
     });
 
@@ -70,35 +68,6 @@ const useSettings = () => {
             }
         };
         if (status !== 'loading') fetchProfile();
-    }, [session, status]);
-
-    useEffect(() => {
-        const fetchPaymentHistory = async () => {
-            setIsLoading(true);
-            try {
-                const email = session?.user?.email;
-                console.log("\n\nEmail:", email);
-                if (email) {
-                    const paymentHistory = await getPaymentHistory(email);
-                    setPayments(paymentHistory);
-                } else {
-                    toast.toast({
-                        title: "Error",
-                        description: "User email is not available",
-                        variant: "destructive",
-                    });
-                }
-            } catch (error) {
-                toast.toast({
-                    title: "Error",
-                    description: "Failed to fetch payment history",
-                    variant: "destructive",
-                });
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        if (status !== 'loading') fetchPaymentHistory();
     }, [session, status]);
 
     // Password change state

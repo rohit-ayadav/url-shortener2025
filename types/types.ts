@@ -34,10 +34,12 @@ interface Analytics {
 export type { UrlData, User, Analytics };
 
 export interface PaymentHistory {
-    _id: ObjectId;
+    _id: string;
+    orderId: string;
     date: string;
     amount: number;
-    status: 'succeeded' | 'failed' | 'pending';
+    currency: string;
+    status: 'paid' | 'failed' | 'pending';
     description: string;
 }
 

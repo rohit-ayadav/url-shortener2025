@@ -21,25 +21,27 @@ export function PaymentHistoryCard({ payments }: PaymentHistoryCardProps) {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            {/* <TableHead>Id</TableHead> */}
                             <TableHead>Date</TableHead>
+                            <TableHead>Order Id</TableHead>
                             <TableHead>Mode</TableHead>
                             <TableHead>Amount</TableHead>
                             <TableHead>Status</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-
                         {payments.map((payment) => (
-                            <TableRow key={payment._id.toString()}>
+
+                            <TableRow key={payment._id ? payment._id.toString() : 'unknown'}>
+
                                 <TableCell>
                                     {new Date(payment.date).toLocaleDateString()}
                                 </TableCell>
+                                <TableCell>{payment.orderId}</TableCell>
                                 <TableCell>{payment.description}</TableCell>
-                                <TableCell>₹{payment.amount}</TableCell>
+                                <TableCell>{payment.currency === 'INR' ? '₹' : payment.currency}                                    {payment.amount}</TableCell>
                                 <TableCell>
                                     <Badge variant={
-                                        payment.status === 'succeeded' ? 'default' :
+                                        payment.status === 'paid' ? 'default' :
                                             payment.status === 'failed' ? 'destructive' : 'secondary'
                                     }>
                                         {payment.status.charAt(0).toUpperCase() +

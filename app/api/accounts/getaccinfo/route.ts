@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
         if (!user) {
             return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
         }
-        const paymentsResponse = await Payment.find({ user: user._id }).sort({ createdAt: -1 });
+        const payments = await Payment.find({ user: user._id }).sort({ createdAt: -1 });
         const profileResponse: UserProfile = {
             name: user.name,
             email: user.email,
@@ -33,6 +33,15 @@ export async function POST(request: NextRequest) {
                 limit: 1000,
             }
         };
+        const paymentsResponse = payments.map(payment => ({
+            _id: payment._id.toString(),
+            date: payment.createdAt,
+            orderId: payment.orderId,
+            amount: payment.amount,
+            currency: payment.currency,
+            status: payment.status,
+            description: payment.paymentMethod,
+        }));
         return NextResponse.json({ profileResponse, paymentsResponse });
     }
     catch (error) {
@@ -40,5 +49,3 @@ export async function POST(request: NextRequest) {
         return null;
     }
 }
-
-
