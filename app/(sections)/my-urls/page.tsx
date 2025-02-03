@@ -50,6 +50,7 @@ import QRCodeModal from '@/components/QRCodeModal';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { ObjectId } from 'mongoose';
+import { url } from 'inspector';
 
 interface Url {
     _id: ObjectId;
@@ -318,7 +319,7 @@ const MyUrlsPage = () => {
                     <Card>
                         <CardContent className="p-8 text-center">
                             <p className="text-gray-500">No URLs found.</p>
-                            <p className="text-gray-500">Try changing the search query or filter.</p>
+                            <p className="text-gray-500">{urls.length > 0 ? 'Try changing the search or filter criteria.' : 'Create a new URL to get started.'}</p>
                         </CardContent>
                     </Card>
                 ) : (

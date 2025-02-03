@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { DialogTitle } from '@radix-ui/react-dialog';
-import { getSession, signOut } from 'next-auth/react';
+import { getSession, signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 const Header = () => {
@@ -23,24 +23,20 @@ const Header = () => {
     const [email, setEmail] = React.useState('');
     const [avatar, setAvatar] = React.useState('');
     const router = useRouter();
-
+    const { data: session, status } = useSession();
+    
     useEffect(() => {
         const checkSession = async (): Promise<void> => {
-            console.log('Checking session...');
             const session = await getSession();
             if (session) {
-                console.log(`\n\nSession: ${JSON.stringify(session, null, 2)}\n\n`);
                 setIsLoggedin(true);
                 setName(session.user?.name ?? '');
                 setEmail(session.user?.email ?? '');
                 setAvatar(session.user?.image ?? '');
-            } else {
-                console.log('No session found');
             }
-        }
-        checkSession();
-        console.log('Session checked');
-    }, []);
+        };
+        if (status !== 'loading') checkSession();
+    }, [session, status]);
 
     const isAuthenticated = isLoggedin;
     const user = {

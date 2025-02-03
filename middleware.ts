@@ -3,8 +3,8 @@ import { getToken } from "next-auth/jwt";
 
 export async function middleware(req: NextRequest) {
     const secret = process.env.NEXTAUTH_SECRET
-    const { pathname } = req.nextUrl || { pathname: '' };
-    // console.log(`\n\nPathname: ${pathname}\n\n`);
+    const pathname = req.nextUrl.pathname;
+    console.log(`\n\nPathname: ${pathname}\n\n`);
 
     const publicRoutes = ["/", "/about", "/contact", "/auth", '/pricing', '/features'];
     const adminRoutes = ["/admin"];

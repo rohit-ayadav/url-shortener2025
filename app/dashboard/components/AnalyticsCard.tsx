@@ -11,8 +11,8 @@ export const AnalyticsCard = ({ analytics }: AnalyticsCardProps) => {
         { label: 'Total URLs shortened', value: analytics.totalShorten },
         { label: 'Total Clicks', value: analytics.totalClick },
         { label: 'Subscription Status', value: analytics.subscriptionStatus },
-        { label: 'Daily Quota Used', value: analytics.monthlyQuotaUsed },
-        { label: 'Daily Quota Limit', value: analytics.monthlyQuotaLimit },
+        { label: 'Monthly Quota Used', value: analytics.monthlyQuotaUsed },
+        { label: 'Monthly Quota Limit', value: analytics.monthlyQuotaLimit },
     ];
 
     return (

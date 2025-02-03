@@ -1,5 +1,6 @@
 "use client";
 import { signIn, useSession } from 'next-auth/react';
+import AuthError from 'next-auth/react';
 import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { useToast } from '@/hooks/use-toast';
@@ -34,16 +35,18 @@ const useAuth = () => {
     const [otpSending, setOtpSending] = React.useState(false);
 
     useEffect(() => {
+        console.log('\nUseAuth\nSession:', session);
+        console.log('Status:', status);
         if (session && status === 'authenticated') {
             toast.toast({
                 title: 'You are already logged in',
-                description: "Redirecting to dashboard...",
+                description: `Redirecting to ${redirect || 'dashboard'}...`,
                 duration: 5000,
                 variant: 'default',
             })
-            router.push('/dashboard?you-are-already-logged-in');
+            router.push(`${redirect || 'dashboard'}`);
         }
-    }, []);
+    }, [session, status]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -67,26 +70,37 @@ const useAuth = () => {
         try {
             // Call your authentication API here
             if (isLogin) {
-                const result = await signIn('credentials', {
-                    email: formData.email,
-                    password: formData.password,
-                    redirect: true,
-                    callbackUrl: `/${redirect || 'dashboard'}`,
-                });
-                if (result?.ok) {
-                    toast.toast({
-                        title: 'Sign in successful',
-                        description: 'You have successfully signed in.',
+                console.log(`Signing in with email: ${formData.email} and password: ${formData.password}`);
+                try {
+                    const result = await signIn('credentials', {
+                        email: formData.email,
+                        password: formData.password,
+                        redirect: false,
                     });
-                    setSuccess('Sign in successful');
-                    if (result.ok) {
-                        router.push('/profile');
-                    } else {
-                        throw new Error(result.error || 'Authentication failed');
+                    console.log('Sign in result:', result);
+
+                    if (result?.ok) {
+                        toast.toast({
+                            title: 'Sign in successful',
+                            description: 'You have successfully signed in.',
+                        });
+                        setSuccess('Sign in successful');
+                        if (result.ok) {
+                            router.push(`/${redirect || 'dashboard'}`);
+                        } else {
+                            throw new Error(result.error || 'Authentication failed');
+                        }
                     }
-                }
-                else {
-                    throw new Error(result?.error || 'Authentication failed');
+                    if (result?.error) {
+                        const errorMessages: Record<string, string> = {
+                            'CredentialsSignin': 'Invalid credentials',
+                            'EmailVerification': 'Please verify your email address',
+                        };
+                        console.log('Error:', errorMessages[result.error] || result.error);
+                        throw new Error(errorMessages[result.error] || result.error);
+                    }
+                } catch (error: any) {
+                    throw error;
                 }
             } else {
                 // Register user
@@ -115,12 +129,18 @@ const useAuth = () => {
                 setSuccess('Account created. Please sign in.');
                 setIsLogin(true);
             }
-        } catch (err) {
+        } catch (err: unknown) {
+            // console.log(`Outer catch block: ${err}`);
             if (err instanceof Error) {
                 setError(`${err.message}`);
             } else {
                 setError('An unknown error occurred');
             }
+            toast.toast({
+                title: 'Error',
+                description: `${err instanceof Error ? err.message : 'An unknown error occurred'}`,
+                variant: 'destructive',
+            });
         } finally {
             setLoading(false);
         }

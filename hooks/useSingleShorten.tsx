@@ -125,9 +125,9 @@ const useSingleShorten = () => {
                     }}>Try again</ToastAction>,
                 variant: 'destructive',
             });
-            if ((err as Error).message === 'Daily quota exceeded, Kindly upgrade to premium') {
+            if ((err as Error).message === 'Monthly Quota exceeded, Kindly upgrade to premium') {
                 toast.toast({
-                    title: 'Daily quota exceeded',
+                    title: 'Monthly Quota exceeded',
                     description: 'Kindly upgrade to premium',
                     variant: 'destructive',
                     action: <ToastAction

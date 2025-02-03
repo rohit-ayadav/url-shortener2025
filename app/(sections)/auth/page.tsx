@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { FaGoogle } from "react-icons/fa";
-import useAuth from './useAuth';
+import useAuth from '@/hooks/useAuth';
 import { signIn } from 'next-auth/react';
 import { Toaster } from 'react-hot-toast';
 import { useSearchParams } from 'next/navigation';
@@ -32,8 +32,6 @@ const AuthPages = () => {
         otpSending,
     } = useAuth();
 
-
-
     const params = useSearchParams();
     useEffect(() => {
         if (params.has('signup')) {
@@ -41,8 +39,6 @@ const AuthPages = () => {
         }
         setRedirect(params.get('redirect') || null);
     }, [params]);
-
-
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">

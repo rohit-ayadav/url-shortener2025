@@ -95,13 +95,13 @@ export const authOptions = {
 
             try {
                 const existingUser = await User.findOne({ email });
-                sendEmail({
-                    from: '"RUShort Authentication Team" <rohitkuyada@gmail.com>',
-                    to: email,
-                    subject: 'New Login Detected for your RUShort Account',
-                    text: `Hello ${user.user.name},\n\nA new login was detected for your RUShort account. If this was you, you can ignore this email. If this was not you, please contact us immediately at resourcesandupdates@gmail.com.\n\nBest,\nRUShort Team`,
-                    html: generateEmailTemplate("newLogin", { name: user.user.name, device: user.user.agent, location: "Earth, Milky Way", datetime: new Date().toLocaleString() }),
-                });
+                // sendEmail({
+                //     from: '"RUShort Authentication Team" <rohitkuyada@gmail.com>',
+                //     to: email,
+                //     subject: 'New Login Detected for your RUShort Account',
+                //     text: `Hello ${user.user.name},\n\nA new login was detected for your RUShort account. If this was you, you can ignore this email. If this was not you, please contact us immediately at resourcesandupdates@gmail.com.\n\nBest,\nRUShort Team`,
+                //     html: generateEmailTemplate("newLogin", { name: user.user.name, device: user.user.agent, location: "Earth, Milky Way", datetime: new Date().toLocaleString() }),
+                // });
                 if (existingUser) {
                     existingUser.provider = user?.account?.provider || existingUser.provider;
                     if (profile) {
