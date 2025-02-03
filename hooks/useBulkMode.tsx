@@ -85,6 +85,7 @@ const useBulkMode = () => {
             throw err;
         }
     }
+
     const onPrefixChange = (value: string) => {
         setPrefix(value);
     }
@@ -217,6 +218,7 @@ const useBulkMode = () => {
         loading,
         length,
         prefix,
+        setPrefix,
         expirationDate,
         shortenedURLs,
         error,
