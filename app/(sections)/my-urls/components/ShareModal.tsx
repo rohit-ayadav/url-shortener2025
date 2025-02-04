@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Facebook, Linkedin, MessageCircle, Twitter } from 'lucide-react';
-
+import { formatUrl } from '@/utils/formatUrl';
 interface ShareModalProps {
     url: { shortUrl: string };
     isOpen: boolean;
@@ -9,10 +9,10 @@ interface ShareModalProps {
 }
 export const ShareModal = ({ url, isOpen, onClose }: ShareModalProps) => {
     const shareUrls = {
-        twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url.shortUrl)}`,
-        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url.shortUrl)}`,
-        linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url.shortUrl)}`,
-        whatsapp: `https://wa.me/?text=${encodeURIComponent(url.shortUrl)}`
+        twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(formatUrl(url.shortUrl))}`,
+        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(formatUrl(url.shortUrl))}`,
+        linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(formatUrl(url.shortUrl))}`,
+        whatsapp: `https://wa.me/?text=${encodeURIComponent(formatUrl(url.shortUrl))}`
     };
 
     return (

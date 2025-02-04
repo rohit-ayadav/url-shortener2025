@@ -6,18 +6,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Copy, Edit, Share2, Trash2 } from 'lucide-react';
 import { ObjectId } from 'mongoose';
+import { UrlData } from '@/types/types';
+import { formatUrl } from '@/utils/formatUrl';
 
 interface UrlTableProps {
-    urls: any[];
+    urls: UrlData[];
     selectedUrls: ObjectId[];
     onSelectUrl: (ids: ObjectId[]) => void;
-    onEdit: (url: any) => void;
+    onEdit: (url: UrlData) => void;
     onDelete: (ids: ObjectId[]) => void;
-    onShare: (url: any) => void;
+    onShare: (url: UrlData) => void;
     onViewAnalytics: (url: any) => void;
 }
 export const UrlTable = ({ urls, selectedUrls, onSelectUrl, onEdit, onDelete, onShare, onViewAnalytics }: UrlTableProps) => {
-    if(urls.length === 0) {
+    if (urls.length === 0) {
         return (
             <Card className="flex flex-col items-center justify-center mt-5 p-6">
                 <CardContent className="p-8 text-center text-muted-foreground">
@@ -82,7 +84,7 @@ export const UrlTable = ({ urls, selectedUrls, onSelectUrl, onEdit, onDelete, on
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => navigator.clipboard.writeText(url.shortUrl)}
+                                                onClick={() => navigator.clipboard.writeText(formatUrl(url.shortUrl))}
                                             >
                                                 <Copy className="h-4 w-4" />
                                             </Button>
@@ -91,10 +93,10 @@ export const UrlTable = ({ urls, selectedUrls, onSelectUrl, onEdit, onDelete, on
                                     <TableCell>{url.clicks}</TableCell>
                                     <TableCell>{format(url.created, 'PPP')}</TableCell>
                                     <TableCell>
-                                        {url.expiresAt ? (
+                                        {url.expireAt ? (
                                             <div className="flex flex-col">
-                                                <span>{format(url.expiresAt, 'PPP')}</span>
-                                                {differenceInDays(url.expiresAt, new Date()) <= 7 && (
+                                                <span>{format(url.expireAt, 'PPP')}</span>
+                                                {differenceInDays(url.expireAt, new Date()) <= 7 && (
                                                     <span className="text-red-500 text-sm">Expiring soon!</span>
                                                 )}
                                             </div>

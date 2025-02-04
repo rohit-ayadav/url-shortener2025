@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { SlidersHorizontal } from 'lucide-react';
 import QRCodeModal from '@/components/QRCodeModal';
-import UrlContext from '../../../hooks/useMyUrls';
+import UrlContext from '@/hooks/useMyUrls';
 import { UrlTableHeader } from './components/UrlTableHeader';
 import { UrlFilters } from './components/UrlFilters';
 import { BulkActions } from './components/BulkActions';
@@ -66,6 +66,7 @@ const MyUrlsPage = () => {
         handleDownloadCSV,
         handleFilterChange,
         sortBy,
+        handleShareSingle,
     } = UrlContext();
 
     if (loading) {
@@ -86,7 +87,7 @@ const MyUrlsPage = () => {
                     <h2 className="text-2xl font-bold text-red-600 mb-2" > Error </h2>
                     < p className="text-gray-600" > {error} </p>
                     < Button
-                        onClick={refetch} className="mt-4"
+                    onClick={refetch} className="mt-4" 
                     >
                         Retry
                     </Button>
@@ -129,7 +130,7 @@ const MyUrlsPage = () => {
                         setShowEditDialog(true);
                     }}
                     onDelete={handleDelete}
-                    onShare={handleShare}
+                    onShare={(url) => handleShareSingle(url)}
                     onViewAnalytics={handleViewAnalytics}
                 />
 

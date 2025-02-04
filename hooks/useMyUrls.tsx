@@ -4,6 +4,7 @@ import { ObjectId, set } from 'mongoose';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { url } from 'inspector';
 
 const sortOptions = [
     { value: 'created_desc', label: 'Newest First' },
@@ -161,10 +162,6 @@ const UrlContext = () => {
         }
     };
 
-    const handleShare = () => {
-        setShowShareModal(true);
-    };
-
     const handleViewAnalytics = (url: UrlData) => {
         setSelectedUrl(url);
         setShowAnalytics(true);
@@ -254,6 +251,20 @@ const UrlContext = () => {
         await fetchUrls();
     };
 
+    const handleShareSingle = (url: UrlData) => {
+        setSelectedUrl(url);
+        setShowShareModal(true);
+    };
+
+    const handleShare = () => {
+        if (selectedUrls.length === 1) {
+            setSelectedUrl(urls.find(url => url._id === selectedUrls[0]));
+            setShowShareModal(true);
+        } else {
+            setShowShareModal(true);
+        }
+    };
+
     return {
         user,
         loading,
@@ -288,6 +299,7 @@ const UrlContext = () => {
         handleDownloadCSV,
         handleFilterChange,
         sortBy,
+        handleShareSingle,
     };
 
 }
