@@ -21,9 +21,7 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession();
     const { searchParams } = new URL(request.url);
     const params = Object.fromEntries(searchParams.entries());
-    console.log("\n\nParams:", params);
     const { limit } = params;
-    console.log("Limit:", limit);
     const email = session?.user?.email;
     if (!email) return NextResponse.json({ message: "You must be logged in to view your URLs", success: false }, { status: 401 });
 

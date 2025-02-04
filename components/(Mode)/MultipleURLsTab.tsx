@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import useBulkMode from '@/hooks/useBulkMode';
 import ResultCard from '../ResultCard';
+import { useToast } from '@/hooks/use-toast';
 
 const MAX_URLS = 1000;
 const MIN_LENGTH = 4;
@@ -27,21 +28,23 @@ const MAX_LENGTH = 32;
 const MultipleURLsPage = () => {
   const {
     urls,
+    setUrls,
     loading,
     length,
+    setLength,
     prefix,
+    setPrefix,
     shortenedURLs,
     error,
-    onPaste,
-    onLengthChange,
-    onPrefixChange,
-    onExpirationDateChange,
+    setExpirationDate,
     handleShortenMultiple,
     handleClear,
-    onUrlsChange,
-    urlCount  } = useBulkMode();
+    handleReadCSV,
+    handleDownloadCSV,
+    urlCount } = useBulkMode();
 
   const today = new Date().toISOString().split('T')[0];
+  const toast = useToast();
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -73,7 +76,10 @@ const MultipleURLsPage = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={onPaste}
+                    onClick={async () => {
+                      const text = await navigator.clipboard.readText();
+                      setUrls(text);
+                    }}
                     className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
                   >
                     <ClipboardCopy className="h-4 w-4 mr-2" />
@@ -94,7 +100,7 @@ const MultipleURLsPage = () => {
               <div className="relative">
                 <Textarea
                   value={urls}
-                  onChange={onUrlsChange}
+                  onChange={(e) => setUrls(e.target.value)}
                   placeholder="https://example.com/long-url-1&#10;https://example.com/long-url-2&#10;https://example.com/long-url-3"
                   className={`min-h-[250px] resize-y p-4 text-base bg-white border-purple-100 focus:border-purple-300 focus:ring-purple-200 ${error ? 'border-red-300' : ''
                     }`}
@@ -116,7 +122,7 @@ const MultipleURLsPage = () => {
                   id="length"
                   type="number"
                   value={length}
-                  onChange={(e) => onLengthChange(Number(e.target.value))}
+                  onChange={(e) => setLength(+e.target.value)}
                   className="border-purple-100 focus:border-purple-300 focus:ring-purple-200"
                   min={MIN_LENGTH}
                   max={MAX_LENGTH}
@@ -131,7 +137,7 @@ const MultipleURLsPage = () => {
                 <Input
                   id="prefix"
                   value={prefix}
-                  onChange={(e) => onPrefixChange?.(e.target.value)}
+                  onChange={(e) => setPrefix(e.target.value)}
                   placeholder="e.g., promo, blog"
                   className="border-purple-100 focus:border-purple-300 focus:ring-purple-200"
                   maxLength={20}
@@ -146,7 +152,7 @@ const MultipleURLsPage = () => {
                 <Input
                   id="expiration"
                   type="date"
-                  onChange={(e) => onExpirationDateChange?.(new Date(e.target.value))}
+                  onChange={(e) => setExpirationDate(new Date(e.target.value))}
                   className="border-purple-100 focus:border-purple-300 focus:ring-purple-200"
                   min={today}
                 />
@@ -174,8 +180,42 @@ const MultipleURLsPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Upload CSV and Download CSV */}
+      <div className="flex items-center justify-between mt-6">
+        <div>
+          <Label
+            htmlFor="csv"
+            className="text-purple-900"
+            onClick={() => {
+              toast.toast({
+                title: 'Please note',
+                description: 'Upload a csv file with headers as "OriginalURL" and in first column',
+                variant: 'default',
+              });
+            }}
+          >
+            Upload CSV
+          </Label>
+          <input
+            type="file"
+            id="csv"
+            accept=".csv"
+            onChange={handleReadCSV}
+            className="hidden"
+          />
+        </div>
+        <Button
+          onClick={handleDownloadCSV}
+          disabled={shortenedURLs.length === 0}
+          className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg hover:shadow-xl transition-all py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Download CSV
+        </Button>
+      </div>
+
       {shortenedURLs.length > 0 && (
-        <div className="space-y-3 animate-in fade-in-50 duration-500">
+        <div className="space-y-3 animate-in fade-in-50 duration-500 mt-6">
           {shortenedURLs.map((item, index) => (
             <ResultCard
               key={index}

@@ -7,6 +7,7 @@ interface UrlData {
     clicks: number;
     created: Date;
     lastClicked: Date;
+    expireAt: Date | null;
     status: 'active' | 'expired' | 'archived';
 }
 
@@ -59,3 +60,16 @@ export interface UserProfile {
         limit: number;
     };
 }
+
+interface User {
+    _id: ObjectId;
+    name: string;
+    email: string;
+    role: 'user' | 'admin';
+    subscriptionStatus: 'free' | 'basic' | 'premium';
+    subscriptionExpiration: Date | null;
+    monthlyQuotaUsed: number;
+    monthlyQuotaLimit: number;
+    createdAt: Date;
+}
+

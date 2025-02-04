@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { ToastAction } from '@/components/ui/toast';
 import { useToast } from './use-toast';
 import { isValidURL } from '@/utils/utils';
+import BulkShort from '@/action/doBulkShort';
 
 const useBulkMode = () => {
     const [loading, setLoading] = useState(false);
@@ -11,87 +12,13 @@ const useBulkMode = () => {
     const [expirationDate, setExpirationDate] = useState<Date | null>(null);
     const [shortenedURLs, setShortenedURLs] = useState<{ original: string; shortened: string; createdAt?: string; expiresAt?: string }[]>([]);
     const [error, setError] = useState('');
-    const [showQR, setShowQR] = useState(false);
     const toast = useToast();
     const [urlCount, setUrlCount] = useState(0);
     const [urls, setUrls] = useState('');
-    const [selectedURL, setSelectedURL] = useState('');
 
     useEffect(() => {
         setUrlCount(urls.split('\n').filter(u => u.trim()).length);
     }, [urls]);
-
-    const onPaste = () => {
-        navigator.clipboard.readText().then(setUrls);
-    };
-
-    const onLengthChange = (value: number) => {
-        setLength(value);
-    };
-
-    const callAPI = async (url: string, alias: string, prefix: string, length: number, expirationDate: Date | null) => {
-        try {
-            console.log(`\n\ncallAPI Called with: ${url}, ${alias}, ${prefix}, ${length}, ${expirationDate}`);
-            const response = await fetch('/api/urlshortener', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    originalUrl: url,
-                    alias,
-                    prefix,
-                    length,
-                    expirationDate,
-                }),
-            });
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.message);
-            }
-
-            toast.toast({
-                title: 'Success',
-                description: data.message,
-            });
-            return data.shortenURL;
-        } catch (err) {
-            setError(`Failed to create short URL: ${(err as Error).message}`);
-
-            toast.toast({
-                title: 'Failed to create short URL',
-                description: `${(err as Error).message}`,
-                action: <ToastAction
-                    altText='Try again'
-                    onClick={() => {
-                        setError('');
-                        handleShortenMultiple();
-                    }}>Try again</ToastAction>,
-                variant: 'destructive',
-            });
-            if ((err as Error).message === 'Monthly Quota exceeded, Kindly upgrade to premium') {
-                toast.toast({
-                    title: 'Monthly Quota exceeded',
-                    description: 'Kindly upgrade to premium',
-                    variant: 'destructive',
-                    action: <ToastAction
-                        altText='Upgrade now'
-                        onClick={() => {
-                            setError('');
-                            window.open('/pricing', '_blank');
-                        }}>Upgrade now</ToastAction>,
-                });
-            }
-            throw err;
-        }
-    }
-
-    const onPrefixChange = (value: string) => {
-        setPrefix(value);
-    }
-    const onExpirationDateChange = (value: Date) => {
-        setExpirationDate(value);
-    }
 
     const handleShortenMultiple = async () => {
         setError('');
@@ -104,7 +31,6 @@ const useBulkMode = () => {
                 description: 'Please enter URLs',
                 variant: 'destructive',
             });
-
             return;
         }
         if (!navigator.onLine) {
@@ -134,14 +60,37 @@ const useBulkMode = () => {
                 return;
             }
 
-            console.log('\n\nURLs:', urlList);
-
             const invalidUrls = urlList.filter(url => {
                 return !isValidURL(url.trim());
             });
 
             if (invalidUrls.length > 0) {
-                setError(`Invalid URLs detected: ${invalidUrls.slice(0, 3).join(', ')}${invalidUrls.length > 3 ? '...' : ''}`);
+                setError(`${invalidUrls.length} Invalid URLs detected: ${invalidUrls.slice(0, 3).join(', ')}${invalidUrls.length > 3 ? '...' : ''}`);
+                toast.toast({
+                    title: `${invalidUrls.length} Invalid URLs detected...`,
+                    description: `Keep each URL in a new line`,
+                    variant: 'destructive',
+                });
+                return;
+            }
+
+            toast.toast({
+                title: 'Shortening URLs...',
+                description: 'Please wait...',
+                variant: 'default',
+            });
+            const { shortenedURLs, error, invalidUrls: bulkInvalidUrls } = await BulkShort(urlList, prefix, length, expirationDate);
+            if (error) {
+                setError(error);
+                toast.toast({
+                    title: 'Error',
+                    description: error,
+                    variant: 'destructive',
+                });
+                return;
+            }
+            if (bulkInvalidUrls) {
+                setError(`Invalid URLs detected: ${bulkInvalidUrls.slice(0, 3).join(', ')}${bulkInvalidUrls.length > 3 ? '...' : ''}`);
                 toast.toast({
                     title: 'Invalid URLs detected...',
                     description: `Keep each URL in a new line`,
@@ -149,21 +98,10 @@ const useBulkMode = () => {
                 });
                 return;
             }
-            toast.toast({
-                title: 'Shortening URLs...',
-                description: 'Please wait...',
-                variant: 'default',
-            });
+            if (shortenedURLs) {
+                setShortenedURLs(shortenedURLs);
+            }
 
-            const shortened = await Promise.all(
-                urlList.map(async u => ({
-                    original: u,
-                    shortened: await callAPI(u, '', prefix, length, expirationDate),
-                    createdAt: new Date().toISOString(),
-                    expiresAt: expirationDate?.toISOString(),
-                }))
-            );
-            setShortenedURLs(shortened);
             setError('');
         } catch (err: any) {
             setError(err.message);
@@ -172,44 +110,80 @@ const useBulkMode = () => {
         }
     };
 
-    const handleCopy = (url: string) => {
-        navigator.clipboard.writeText(url);
-    };
-
-
     const handleClear = () => {
         setShortenedURLs([]);
         setUrls('');
         setError('');
     };
-    const handleOpen = (url: string) => {
-        // add https if not present
-        if (!url.startsWith('http')) {
-            url = `https://${url}`;
-        }
-        window.open(url, '_blank');
+
+    const handleDownloadCSV = () => {
+        const header = "Original URL,Shortened URL,Date Created,Expires At\n";
+        const csvContent = shortenedURLs
+            .map(url => {
+                const createdAt = url.createdAt ?? '';
+                const expiresAt = url.expiresAt ?? (createdAt ? new Date(new Date(createdAt).setDate(new Date(createdAt).getDate() + 90)).toISOString().split('T')[0] : '90 days from creation');
+
+                return `"${url.original}","${url.shortened}","${createdAt}","${expiresAt}"`;
+            })
+            .join("\n");
+
+        const footer = `\n\nThis file was generated by RUShort.\nVisit RUShort: https://rushort.site to shorten your URLs.\nFollow Resources and Updates: https://whatsapp.com/channel/0029VaVd6px8KMqnZk7qGJ2t for job/internship updates.`;
+
+        const csv = header + csvContent + footer;
+
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `RUShort-Bulk-Shortened-URLs-${new Date().toISOString().split("T")[0]}.csv`;
+        a.click();
+
+        URL.revokeObjectURL(url);
     };
 
-    const handleShare = async (url: string) => {
-        if (navigator.share) {
-            if (!url.startsWith('http')) {
-                url = `https://${url}`;
-            }
-            try {
-                await navigator.share({ url });
-                toast.toast({
-                    title: 'Success',
-                    description: 'URL shared successfully',
-                    variant: 'default',
-                });
-            } catch (err) {
-                console.error('Error sharing:', err);
-            }
+    const handleReadCSV = (event: any) => {
+        const file = event.target.files?.[0];
+        if (!file) {
+            toast.toast({
+                title: 'Error',
+                description: 'No file selected',
+                variant: 'destructive',
+            });
+            return;
         }
-    };
-    const onUrlsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const text = e.target.value;
-        setUrls(text);
+
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+            const content = e.target.result;
+            const lines = content.split("\n");
+            const originalUrls: string[] = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const row = lines[i].split(",");
+                if (row.length >= 1) {
+                    const originalUrl = row[0].replace(/"/g, "");
+                    if (originalUrl) {
+                        originalUrls.push(originalUrl);
+                    }
+                } else {
+                    toast.toast({
+                        title: 'Error',
+                        description: 'Invalid CSV file',
+                        variant: 'destructive',
+                    });
+                    return;
+                }
+            }
+            console.log(originalUrls);
+            setUrls(originalUrls.join("\n"));
+            toast.toast({
+                title: 'CSV file uploaded',
+                description: 'URLs are ready to be shortened',
+                variant: 'default',
+            });
+        };
+        reader.readAsText(file);
     };
 
     return {
@@ -217,27 +191,18 @@ const useBulkMode = () => {
         setUrls,
         loading,
         length,
+        setLength,
         prefix,
         setPrefix,
-        expirationDate,
         shortenedURLs,
         error,
-        showQR,
-        onPaste,
-        onLengthChange,
-        onPrefixChange,
-        onExpirationDateChange,
+        setExpirationDate,
         handleShortenMultiple,
-        handleCopy,
         handleClear,
-        handleOpen,
-        handleShare,
-        onUrlsChange,
         urlCount,
-        setShowQR,
-        selectedURL,
-        setSelectedURL,
-    };
+        handleReadCSV,
+        handleDownloadCSV,
+    }
 }
 
 export default useBulkMode;
