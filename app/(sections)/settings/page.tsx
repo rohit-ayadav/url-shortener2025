@@ -1,6 +1,6 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import { User, Shield, CreditCard, Key, ChevronRight } from 'lucide-react';
+import React, { Suspense, useEffect, useState } from 'react';
+import { User, Shield, CreditCard, Key, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { ProfileInformation } from './components/profile/ProfileInformation';
 import { SecuritySettings } from './components/profile/SecuritySettings';
 import { BillingSection } from './components/profile/BillingSection';
@@ -8,7 +8,7 @@ import { ApiSection } from './components/profile/ApiSection';
 import useSettings from '@/hooks/useSettings';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-export default function ProfilePage() {
+function ProfilePage() {
     const router = useRouter();
     const params = useSearchParams();
     const [activeTab, setActiveTab] = useState('profile');
@@ -160,3 +160,22 @@ export default function ProfilePage() {
         </div>
     );
 }
+
+const Loading = () => (
+    <div className="min-h-screen flex items-center justify-center">
+        <div className="flex items-center gap-2">
+            <SlidersHorizontal className="h-8 w-8 animate-spin text-blue-600" />
+            <span className="text-blue-600 font-medium">Loading...</span>
+        </div>
+    </div>
+);
+
+const Settings = () => {
+    return (
+        <Suspense fallback={<Loading />}>
+            <ProfilePage />
+        </Suspense>
+    );
+}
+
+export default Settings;
