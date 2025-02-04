@@ -41,7 +41,8 @@ export function SubscriptionCard({ profile }: SubscriptionCardProps) {
                         onClick={() => router.push('/pricing')}>
                         Upgrade to Premium
                     </Button>
-                )}:{profile.subscription.plan === 'premium' && (
+                )}
+                {profile.subscription.plan === 'premium' && (
                     <CardDescription className="text-sm text-gray-500">
                         You are on the premium plan
                     </CardDescription>
