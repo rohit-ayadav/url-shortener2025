@@ -46,6 +46,6 @@ export async function POST(request: NextRequest) {
     }
     catch (error) {
         console.error(error);
-        return null;
+        return NextResponse.json({ success: false, message: "Failed to fetch user data" }, { status: 500 });
     }
 }

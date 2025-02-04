@@ -55,24 +55,8 @@ export const BulkActions = ({ selectedUrls, onExtendExpiry, onDelete }: BulkActi
         <>
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogTrigger asChild>
-                    {/* <Button 
-                        disabled={selectedUrls.length === 0}
-                        className={cn(
-                            "transition-all",
-                            selectedUrls.length > 0 && "animate-pulse",
-                        )}
-                    >
-                        <span className="flex items-center gap-2">
-                            Bulk Actions
-                            {selectedUrls.length > 0 && (
-                                <Badge variant="secondary" className="ml-2">
-                                    {selectedUrls.length}
-                                </Badge>
-                            )}
-                        </span>
-                    </Button> */}
                     {selectedUrls.length > 0 ? (
-                        <Button className="animate-pulse">
+                        <Button className="animate-pulse mb-4">
                             <span className="flex items-center gap-2">
                                 Bulk Actions
                                 <Badge variant="secondary" className="ml-2">
