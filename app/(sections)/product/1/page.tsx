@@ -44,10 +44,11 @@ export default function SecureStartupPage() {
 
     useEffect(() => {
         if (status === 'authenticated') {
-            setStartups(startupData.Sheet1.map(startup => ({
-                ...startup,
-                amount: (startup.amount ?? '').toString(),
-            })));
+            setStartups(startupData['recently-funded-startup-list-of-india']
+                .map(startup => ({
+                    ...startup,
+                    amount: (startup.amount ?? '').toString(),
+                })));
             setLoading(false);
         }
     }, [status]);
@@ -80,7 +81,7 @@ export default function SecureStartupPage() {
                 {[...Array(10)].map((_, i) => {
                     const top = Math.random() * 100; // Random top position
                     const left = Math.random() * 100; // Random left position
-    
+
                     return (
                         <div
                             key={i}
@@ -96,11 +97,11 @@ export default function SecureStartupPage() {
                             {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
                         </div>
                     );
-                })} 
+                })}
             </div>
         );
     };
-    
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
