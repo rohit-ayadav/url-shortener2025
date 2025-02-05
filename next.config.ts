@@ -1,7 +1,12 @@
-import type { NextConfig } from "next";
+import { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  scriptLoader: {
+    scripts: [{
+      src: "https://checkout.razorpay.com/v1/checkout.js",
+      strategy: "beforeInteractive"
+    }]
+  }
 };
 
 export default nextConfig;

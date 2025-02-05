@@ -115,7 +115,9 @@ const Footer = () => {
                 {/* Bottom Section */}
                 <div className="mt-16 pt-8 border-t border-gray-800">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
-                        <p>© {new Date().getFullYear()} RUShort. All rights reserved.</p>
+                        {/* <p>© {new Date().getFullYear()} RUShort. All rights reserved.</p> */}
+                        <p>© {new Date().getFullYear()} RUShort (a subsidiary of <a href='https://resourcesandcarrier.online/' target='_blank' rel='noreferrer' className='hover:underline'>Resources and Updates</a>) • All rights reserved
+                   </p>
                         <div className="flex gap-8">
                             <Button
                                 variant="link"

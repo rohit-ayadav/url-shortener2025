@@ -29,6 +29,7 @@ import { BulkActions } from './components/BulkActions';
 import { UrlTable } from './components/UrlTable';
 import { ShareModal } from './components/ShareModal';
 import Analytics from './components/Analytics';
+import Loading from '@/lib/Loading';
 
 const MyUrlsPage = () => {
 
@@ -70,14 +71,7 @@ const MyUrlsPage = () => {
     } = UrlContext();
 
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center" >
-                <div className="flex items-center gap-2" >
-                    <SlidersHorizontal className="h-8 w-8 animate-spin text-blue-600" />
-                    <span className="text-blue-600 font-medium" > Loading...</span>
-                </div>
-            </div>
-        );
+        return <Loading text='Please wait...' />;
     }
 
     if (error) {
@@ -87,7 +81,7 @@ const MyUrlsPage = () => {
                     <h2 className="text-2xl font-bold text-red-600 mb-2" > Error </h2>
                     < p className="text-gray-600" > {error} </p>
                     < Button
-                    onClick={refetch} className="mt-4" 
+                        onClick={refetch} className="mt-4"
                     >
                         Retry
                     </Button>

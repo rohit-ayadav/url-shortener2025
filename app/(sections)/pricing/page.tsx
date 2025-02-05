@@ -17,6 +17,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Separator } from '@/components/ui/separator';
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 interface PricingPlan {
     id: string;
@@ -37,6 +38,7 @@ const PricingPage = () => {
     const [paymentError, setPaymentError] = useState("");
     const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null);
     const toast = useToast();
+    const route = useRouter();
     const { data: session, status } = useSession();
 
     const pricingPlans: PricingPlan[] = [
@@ -115,6 +117,7 @@ const PricingPage = () => {
                 currency: "INR",
                 paymentMethod: "razorpay",
                 email: session?.user?.email,
+                paymentFor: plan.id,
             };
             console.log(`Creating order for ${plan.name} plan...:`, body);
 
@@ -136,7 +139,7 @@ const PricingPage = () => {
                     name: "RUShort",
                     description: `Payment for ${plan.name} Plan`,
                     image: "/android-chrome-512x512.png",
-                    order_id: data.orderid,
+                    order_id: data.orderId,
                     handler: async function (response: any) {
                         // Verify the payment
                         console.log("Payment response:", response);
@@ -163,12 +166,18 @@ const PricingPage = () => {
                                 description: dataVerify.message,
                                 variant: 'destructive'
                             })
+                        } else {
+                            toast.toast({
+                                title: "Payment Verified Successfully",
+                                description: `You have successfully subscribed to ${plan.name} plan.`,
+                                variant: 'default'
+                            })
+                            route.push("/dashboard");
                         }
                     },
                     prefill: {
                         name: session?.user?.name,
                         email: session?.user?.email,
-                        contact: "9999999999"
                     },
                     theme: {
                         color: "#2563EB", // primary color

@@ -16,6 +16,10 @@ const PaymentSchema = new mongoose.Schema({
         unique: true,
         sparse: true,
     },
+    paymentFor: {
+        type: String,
+        required: true,
+    },
     razorpaySignature: {
         type: String,
     },
@@ -47,7 +51,7 @@ const PaymentSchema = new mongoose.Schema({
         enum: ["pending", "paid", "failed"],
         default: "pending",
     },
-    expiresAt: {
+    validity: {
         type: Date,
     },
     paymentDate: {

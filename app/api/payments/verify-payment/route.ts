@@ -3,6 +3,7 @@ import crypto from "crypto";
 import Payment from "@/models/Payment";
 import { User } from "@/models/User";
 import { connectDB } from "@/utils/db";
+import Product from "@/models/Product";
 
 await connectDB();
 
@@ -10,15 +11,6 @@ export async function POST(request: NextRequest) {
     try {
         const { orderId, paymentId, signature, plan, email } = await request.json();
 
-        console.log(`Payment Verification: 
-            Order ID: ${orderId}
-            Payment ID: ${paymentId}
-            Signature: ${signature}
-            Plan: ${plan}
-            Email: ${email}
-        `);
-
-        
         if (!orderId || !paymentId || !signature || !email) {
             return NextResponse.json({ success: false, message: "Missing required fields" }, { status: 400 });
         }
@@ -26,6 +18,7 @@ export async function POST(request: NextRequest) {
 
         // Fetch payment from DB
         const payment = await Payment.findOne({ orderId });
+        const product = await Product.findOne({ id: plan });
         if (!payment) {
             return NextResponse.json({ success: false, message: "Order not found" }, { status: 404 });
         }
@@ -35,9 +28,8 @@ export async function POST(request: NextRequest) {
             .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET as string)
             .update(`${orderId}|${paymentId}`)
             .digest("hex");
-
         if (generatedSignature !== signature) {
-            return NextResponse.json({ success: false, message: "Invalid payment signature" }, { status: 400 });
+            throw new Error("Invalid Signature");
         }
 
         // Update Payment Status in DB
@@ -45,6 +37,9 @@ export async function POST(request: NextRequest) {
         payment.status = "paid";
         payment.razorpaySignature = signature;
         payment.date = new Date();
+        payment.paymentFor = plan;
+        payment.validity = (plan === 'basic' || plan === 'pro' || plan === 'enterprise') ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : null;
+        payment.paymentMethod = "Razorpay";
         await payment.save();
 
         // Upgrade User to Premium
@@ -54,7 +49,15 @@ export async function POST(request: NextRequest) {
             monthlyQuotaLimit: plan === "basic" ? 500 : 1000,
         });
 
-        return NextResponse.redirect("/dashboard");
+        console.log("Payment Verified Successfully");
+        console.log(`User Upgraded to ${plan} Plan\n\nPayment Details:`, payment);
+        // return NextResponse.redirect(`${request.nextUrl.origin}/dashboard`);
+        return NextResponse.json({
+            success: true,
+            message: "Payment Verified Successfully",
+            plan,
+            payment,
+        }, { status: 200 });
     } catch (error) {
         console.error("Payment Verification Error:", error);
         return NextResponse.json({

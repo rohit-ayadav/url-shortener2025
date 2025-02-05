@@ -13,6 +13,7 @@ import { RecentUrlsCard } from './components/RecentUrlscard';
 import { AnalyticsCard } from './components/AnalyticsCard';
 import { SubscriptionCard } from './components/SubscriptionCard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import Loading from '@/lib/Loading';
 
 const DashboardPage = () => {
   const [showUrlShortener, setShowUrlShortener] = useState(false);
@@ -32,14 +33,7 @@ const DashboardPage = () => {
   }, []);
 
   if (loading || !user || !analytics) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal className="h-8 w-8 animate-spin text-blue-600" />
-          <span className="text-blue-600 font-medium">Loading...</span>
-        </div>
-      </div>
-    );
+    return <Loading text="Preparing your dashboard..." />;
   }
 
   return (

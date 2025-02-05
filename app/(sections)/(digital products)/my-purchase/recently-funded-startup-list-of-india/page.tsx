@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Shield, Lock, ExternalLink, MapPin, Building, DollarSign, MailIcon } from 'lucide-react';
-import startupData from '@/app/api/products/startupList1.json';
+import Loading from '@/lib/Loading';
+import Link from 'next/link';
 
 interface Startup {
     name?: string;
@@ -24,6 +24,22 @@ export default function SecureStartupPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    const fetchProducts = async () => {
+        try {
+            setLoading(true);
+            const res = await fetch('/api/my-purchase/recently-funded-startup-list-of-india');
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.message || 'Failed to fetch products');
+            }
+
+            setStartups(data.data);
+        } catch (error) {
+            setError((error as Error).message);
+        }
+    }
+
     useEffect(() => {
         const handleContextMenu = (e: MouseEvent) => e.preventDefault();
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -34,33 +50,39 @@ export default function SecureStartupPage() {
         document.addEventListener('contextmenu', handleContextMenu);
         document.addEventListener('keydown', handleKeyDown);
         document.addEventListener('selectstart', handleSelection);
+        // prevent right-click, copy, paste, save, print, and text selection
 
+        // prevent screenshot and screen recording
+        const blockDevTools = () => {
+            if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
+                document.body.innerHTML = 'Security violation detected';
+                // wait for 7 seconds before redirecting
+                setTimeout(() => {
+                    // window.location.href = '/unauthorized';
+                }, 7000);
+                window.location.href = '/unauthorized';
+                // this will check if the window is resized or not
+            }
+        };
+
+        blockDevTools();
         return () => {
             document.removeEventListener('contextmenu', handleContextMenu);
             document.removeEventListener('keydown', handleKeyDown);
             document.removeEventListener('selectstart', handleSelection);
         };
+
     }, []);
 
     useEffect(() => {
         if (status === 'authenticated') {
-            setStartups(startupData['recently-funded-startup-list-of-india']
-                .map(startup => ({
-                    ...startup,
-                    amount: (startup.amount ?? '').toString(),
-                })));
+            fetchProducts();
             setLoading(false);
         }
     }, [status]);
 
     if (status === 'loading' || loading) {
-        return (
-            <div className="p-8 space-y-4 max-w-7xl mx-auto">
-                {[...Array(6)].map((_, i) => (
-                    <Skeleton key={i} className="h-32 w-full" />
-                ))}
-            </div>
-        );
+        return <Loading text="Loading Startup Data..." />;
     }
 
     if (status === 'unauthenticated') {
@@ -79,6 +101,7 @@ export default function SecureStartupPage() {
         return (
             <div className="fixed inset-0 pointer-events-none select-none z-50 overflow-hidden">
                 {[...Array(10)].map((_, i) => {
+                    // if(window)
                     const top = Math.random() * 100; // Random top position
                     const left = Math.random() * 100; // Random left position
 
@@ -102,7 +125,6 @@ export default function SecureStartupPage() {
         );
     };
 
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
             <Watermark />
@@ -123,6 +145,28 @@ export default function SecureStartupPage() {
                         </p>
                     </div>
                 </div>
+                {error && (
+                    <div className="max-w-4xl mx-auto p-6">
+                        <Alert variant="destructive">
+                            <Shield className="h-4 w-4" />
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                    </div>
+                )}
+                {error && error === 'Product not purchased' && (
+                    <div className="max-w-4xl mx-auto p-6">
+                        <Alert variant="destructive">
+                            <Shield className="h-4 w-4" />
+                            <AlertDescription>
+                                You have not purchased this product yet. Please visit the{' '}
+                                <Link href="/products" className="text-blue-600 hover:underline">
+                                    store
+                                </Link>{' '}
+                                to make a purchase.
+                            </AlertDescription>
+                        </Alert>
+                    </div>
+                )}
 
                 {/* Content Grid */}
                 <div className="space-y-4 mb-12">
@@ -184,6 +228,21 @@ export default function SecureStartupPage() {
                     ))}
                 </div>
 
+                {/* Funding Series Guide */}
+                <section className="mt-16 mb-12">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-6">Know about various funding series used above</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {fundingSeriesInfo.map((series, index) => (
+                            <Card key={index} className="bg-white/90">
+                                <CardContent className="p-4">
+                                    <h3 className="text-lg font-semibold text-blue-700 mb-2">{series.name}</h3>
+                                    <p className="text-gray-600 text-sm">{series.description}</p>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </section>
+
                 {/* Footer */}
                 <footer className="mt-auto py-8 border-t border-gray-200">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
@@ -209,10 +268,25 @@ export default function SecureStartupPage() {
                         </div>
                     </div>
                     <div className="mt-8 pt-8 border-t border-gray-200 text-center text-sm text-gray-500">
-                        © {new Date().getFullYear()} RUShort (a subsidiary of Resources and Updates) • All rights reserved
+                        © {new Date().getFullYear()} RUShort (a subsidiary of <a href='https://resourcesandcarrier.online/' target='_blank' rel='noreferrer' className='hover:underline'>Resources and Updates</a>) • All rights reserved
                     </div>
                 </footer>
             </main>
         </div>
     );
 }
+
+
+const fundingSeriesInfo = [
+    { name: 'Seed', description: 'Initial funding to develop idea/MVP, typically $10K-$2M' },
+    { name: 'Pre-Series A', description: 'Bridge between seed and Series A, for early market traction' },
+    { name: 'Series A', description: 'First significant round, product-market fit, $2M-$15M' },
+    { name: 'Series B', description: 'Scaling business operations, $7M-$30M' },
+    { name: 'Series C', description: 'Rapid expansion, new markets, $30M-$100M' },
+    { name: 'Series D', description: 'Accelerating growth, pre-IPO preparation, $100M-$250M' },
+    { name: 'Series E', description: 'Additional expansion, delayed IPO, or special situations' },
+    { name: 'Series F', description: 'Later-stage funding, often pre-IPO or major expansion' },
+    { name: 'Venture Debt', description: 'Loan financing alongside equity rounds, lower dilution' },
+    { name: 'Bridge Round', description: 'Short-term funding between major rounds' },
+    { name: 'Crossover', description: 'Mix of private/public investors, late-stage pre-IPO' }
+];

@@ -24,7 +24,7 @@ const Header = () => {
     const [avatar, setAvatar] = React.useState('');
     const router = useRouter();
     const { data: session, status } = useSession();
-    
+
     useEffect(() => {
         const checkSession = async (): Promise<void> => {
             const session = await getSession();
@@ -79,10 +79,9 @@ const Header = () => {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
                                 <DropdownMenuItem onClick={() => router.push('/bulk-shortener')}>Bulk Shortener</DropdownMenuItem>
-                                <DropdownMenuItem>Link in Bio</DropdownMenuItem>
-                                <DropdownMenuItem>QR Codes</DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem>API Access</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => router.push('/text-mode')}>Text Mode</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => router.push('/my-urls')}>My Urls</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => router.push('/my-purchase')}>My Purchase</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </nav>
@@ -110,6 +109,9 @@ const Header = () => {
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={() => router.push('/dashboard')}>Dashboard</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => router.push('/my-urls')}>My Links</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => router.push('/my-purchase')}>My Purchase</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => router.push('/products')}>See Products</DropdownMenuItem>
+                                    <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={() => router.push('/settings')}>Settings</DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem className="text-red-600" onClick={() => signOut()}>
@@ -167,6 +169,12 @@ const Header = () => {
                                         </Button>
                                         <Button variant="ghost" className="justify-start" onClick={() => router.push('/text-mode')}>
                                             Text Mode
+                                        </Button>
+                                        <Button variant="ghost" className="justify-start" onClick={() => router.push('/my-purchase')}>
+                                            My Purchase
+                                        </Button>
+                                        <Button variant="ghost" className="justify-start" onClick={() => router.push('/products')}>
+                                            See Products
                                         </Button>
                                         <Button variant="ghost" className="justify-start" onClick={() => router.push('/my-urls')}>
                                             My Urls

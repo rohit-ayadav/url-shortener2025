@@ -6,6 +6,7 @@ import { User } from '@/models/User';
 import { connectDB } from '@/utils/db';
 import sendEmail from './action/sendEmail';
 import { generateEmailTemplate } from './lib/EmailTemplate';
+import { getServerSession } from 'next-auth';
 
 export const authOptions = {
     providers: [
