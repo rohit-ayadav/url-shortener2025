@@ -33,14 +33,12 @@ export async function GET(request: NextRequest) {
         }
 
         const product = await Product.findOne({ id });
-        // if (!product) {
-        //     return NextResponse.json({ success: false, message: "Product not found" }, { status: 404 });
-        // }
-
-        const payment = payments.find((p) => {
-            p.paymentFor === id && p.status === 'paid' && p.user.toString() === user._id.toString();
+        if (!product) {
+            return NextResponse.json({ success: false, message: "Product not found" }, { status: 404 });
         }
-        );
+
+        const payment = payments.find((p) => p.paymentFor === id);  
+
         if (!payment) {
             return NextResponse.json({ success: false, message: "Product not purchased" }, { status: 404 });
         }

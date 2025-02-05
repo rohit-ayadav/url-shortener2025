@@ -49,9 +49,6 @@ export async function POST(request: NextRequest) {
             monthlyQuotaLimit: plan === "basic" ? 500 : 1000,
         });
 
-        console.log("Payment Verified Successfully");
-        console.log(`User Upgraded to ${plan} Plan\n\nPayment Details:`, payment);
-        // return NextResponse.redirect(`${request.nextUrl.origin}/dashboard`);
         return NextResponse.json({
             success: true,
             message: "Payment Verified Successfully",

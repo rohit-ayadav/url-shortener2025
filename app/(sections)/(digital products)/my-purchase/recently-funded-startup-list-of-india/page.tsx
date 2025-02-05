@@ -168,6 +168,7 @@ export default function SecureStartupPage() {
                     </div>
                 )}
 
+                {loading && <Loading text="Loading Startup Data..." />}
                 {/* Content Grid */}
                 <div className="space-y-4 mb-12">
                     {startups.map((startup, index) => (
