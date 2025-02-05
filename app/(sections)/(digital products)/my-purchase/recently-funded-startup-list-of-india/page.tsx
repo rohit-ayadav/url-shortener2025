@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, Lock, ExternalLink, MapPin, Building, DollarSign, MailIcon } from 'lucide-react';
+import { Shield, Lock, ExternalLink, MapPin, Building, DollarSign, MailIcon, Search } from 'lucide-react';
 import Loading from '@/lib/Loading';
-import Link from 'next/link';
 
 interface Startup {
     name?: string;
@@ -23,6 +22,8 @@ export default function SecureStartupPage() {
     const [startups, setStartups] = useState<Startup[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedRound, setSelectedRound] = useState('all');
 
     const fetchProducts = async () => {
         try {
@@ -30,64 +31,46 @@ export default function SecureStartupPage() {
             const res = await fetch('/api/my-purchase/recently-funded-startup-list-of-india');
             const data = await res.json();
 
-            if (!res.ok) {
-                throw new Error(data.message || 'Failed to fetch products');
-            }
-
+            if (!res.ok) throw new Error(data.message || 'Failed to fetch products');
             setStartups(data.data);
         } catch (error) {
             setError((error as Error).message);
-        }
-    }
-
-    useEffect(() => {
-        const handleContextMenu = (e: MouseEvent) => e.preventDefault();
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.ctrlKey || e.metaKey) && 'cCpPsS'.includes(e.key)) e.preventDefault();
-        };
-        const handleSelection = (e: Event) => e.preventDefault();
-
-        document.addEventListener('contextmenu', handleContextMenu);
-        document.addEventListener('keydown', handleKeyDown);
-        document.addEventListener('selectstart', handleSelection);
-        // prevent right-click, copy, paste, save, print, and text selection
-
-        // prevent screenshot and screen recording
-        const blockDevTools = () => {
-            if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
-                document.body.innerHTML = 'Security violation detected';
-                // wait for 7 seconds before redirecting
-                setTimeout(() => {
-                    // window.location.href = '/unauthorized';
-                }, 7000);
-                window.location.href = '/unauthorized';
-                // this will check if the window is resized or not
-            }
-        };
-
-        blockDevTools();
-        return () => {
-            document.removeEventListener('contextmenu', handleContextMenu);
-            document.removeEventListener('keydown', handleKeyDown);
-            document.removeEventListener('selectstart', handleSelection);
-        };
-
-    }, []);
-
-    useEffect(() => {
-        if (status === 'authenticated') {
-            fetchProducts();
+        } finally {
             setLoading(false);
         }
+    }
+
+    useEffect(() => {
+        if (status === 'authenticated') fetchProducts();
     }, [status]);
 
-    if (status === 'loading' || loading) {
-        return <Loading text="Loading Startup Data..." />;
-    }
+    // Security measures
+    useEffect(() => {
+        const preventActions = (e: Event) => e.preventDefault();
+        document.addEventListener('contextmenu', preventActions);
+        document.addEventListener('selectstart', preventActions);
+        document.addEventListener('keydown', (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && 'cCpPsS'.includes(e.key)) e.preventDefault();
+        });
+
+        return () => {
+            document.removeEventListener('contextmenu', preventActions);
+            document.removeEventListener('selectstart', preventActions);
+        };
+    }, []);
+
+    const filteredStartups = startups.filter(startup => {
+        const matchesSearch = startup.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            startup.headquarters?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesRound = selectedRound === 'all' || startup.round === selectedRound;
+        return matchesSearch && matchesRound;
+    });
+
+    if (status === 'loading' || loading) return <Loading text="Loading Startup Data..." />;
 
     if (status === 'unauthenticated') {
         return (
-            <div className="p-8 max-w-7xl mx-auto">
+            <div className="p-4 sm:p-8 max-w-7xl mx-auto">
                 <Alert variant="destructive">
                     <Shield className="h-4 w-4" />
                     <AlertDescription>Please sign in to access this content.</AlertDescription>
@@ -96,96 +79,96 @@ export default function SecureStartupPage() {
         );
     }
 
-    // Dynamic Watermark Component
-    const Watermark = () => {
-        return (
-            <div className="fixed inset-0 pointer-events-none select-none z-50 overflow-hidden">
-                {[...Array(10)].map((_, i) => {
-                    // if(window)
-                    const top = Math.random() * 100; // Random top position
-                    const left = Math.random() * 100; // Random left position
-
-                    return (
-                        <div
-                            key={i}
-                            className="absolute text-gray-900 opacity-[0.258] transform rotate-[-30deg] text-xs md:text-sm lg:text-base font-semibold whitespace-nowrap"
-                            style={{
-                                top: `${top}%`,
-                                left: `${left}%`,
-                                animation: `slide ${20 + i * 2}s linear infinite`
-                            }}
-                        >
-                            {session?.user?.name} • {session?.user?.email}
-                            <br />
-                            {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    };
+    const Watermark = () => (
+        <div className="fixed inset-0 pointer-events-none select-none z-50 overflow-hidden">
+            {[...Array(10)].map((_, i) => (
+                <div
+                    key={i}
+                    className="absolute text-gray-900 opacity-[0.158] transform rotate-[-30deg] text-[10px] sm:text-xs md:text-sm lg:text-base font-semibold whitespace-nowrap"
+                    style={{
+                        top: `${Math.random() * 100}%`,
+                        left: `${Math.random() * 100}%`,
+                        animation: `slide ${20 + i * 2}s linear infinite`
+                    }}
+                >
+                    {session?.user?.name} • {session?.user?.email}
+                    <br />
+                    {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
+                </div>
+            ))}
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
             <Watermark />
 
-            <main className="relative max-w-7xl mx-auto px-4 py-8 md:px-8">
-                {/* Header Section */}
-                <div className="mb-8">
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <main className="relative max-w-7xl mx-auto px-4 py-4 sm:py-8 md:px-8">
+                {/* Header */}
+                <div className="mb-6 sm:mb-8">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                         Startup Funding Database
                     </h1>
-                    <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-6 rounded-xl border border-yellow-200 shadow-lg">
+                    <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-4 sm:p-6 rounded-xl border border-yellow-200 shadow-lg">
                         <div className="flex items-center gap-3 text-amber-800 mb-3">
-                            <Lock className="h-6 w-6" />
-                            <span className="font-semibold text-xl">Secure Access Portal</span>
+                            <Lock className="h-5 w-5 sm:h-6 sm:w-6" />
+                            <span className="font-semibold text-lg sm:text-xl">Secure Access Portal</span>
                         </div>
-                        <p className="text-amber-700">
-                            Confidential information - Unauthorized sharing strictly prohibited. Access logged and monitored.
+                        <p className="text-amber-700 text-sm sm:text-base">
+                            Confidential information - Unauthorized sharing strictly prohibited.
                         </p>
                     </div>
                 </div>
+
+                {/* Search and Filter */}
+                <div className="mb-6 space-y-4 sm:space-y-0 sm:flex sm:gap-4">
+                    <div className="relative flex-grow">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                        <input
+                            type="text"
+                            placeholder="Search startups..."
+                            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <select
+                        className="w-full sm:w-48 py-2 px-4 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500"
+                        value={selectedRound}
+                        onChange={(e) => setSelectedRound(e.target.value)}
+                    >
+                        <option value="all">All Rounds</option>
+                        {Array.from(new Set(startups.map(s => s.round))).map(round => (
+                            <option key={round} value={round}>{round}</option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Error Handling */}
                 {error && (
-                    <div className="max-w-4xl mx-auto p-6">
-                        <Alert variant="destructive">
-                            <Shield className="h-4 w-4" />
-                            <AlertDescription>{error}</AlertDescription>
-                        </Alert>
-                    </div>
-                )}
-                {error && error === 'Product not purchased' && (
-                    <div className="max-w-4xl mx-auto p-6">
-                        <Alert variant="destructive">
-                            <Shield className="h-4 w-4" />
-                            <AlertDescription>
-                                You have not purchased this product yet. Please visit the{' '}
-                                <Link href="/products" className="text-blue-600 hover:underline">
-                                    store
-                                </Link>{' '}
-                                to make a purchase.
-                            </AlertDescription>
-                        </Alert>
-                    </div>
+                    <Alert variant="destructive" className="mb-6">
+                        <Shield className="h-4 w-4" />
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
                 )}
 
-                {loading && <Loading text="Loading Startup Data..." />}
-                {/* Content Grid */}
+                {/* Startup Cards */}
                 <div className="space-y-4 mb-12">
-                    {startups.map((startup, index) => (
+                    {filteredStartups.map((startup, index) => (
                         <Card key={index} className="overflow-hidden hover:shadow-2xl transition-all duration-300 border-gray-200 bg-white/80 backdrop-blur-sm">
-                            <CardContent className="p-6">
-                                <div className="flex items-start justify-between gap-4">
+                            <CardContent className="p-4 sm:p-6">
+                                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                                     <div className="flex items-center gap-4 flex-grow">
-                                        <span className="text-2xl font-bold text-gray-400 font-mono">
+                                        <span className="text-xl sm:text-2xl font-bold text-gray-400 font-mono">
                                             {String(index + 1).padStart(2, '0')}
                                         </span>
-                                        <div className="space-y-1 flex-grow">
-                                            <div className="flex items-center gap-2">
+                                        <div className="space-y-2 flex-grow">
+                                            <div className="flex items-center gap-2 flex-wrap">
                                                 <a
                                                     href={startup.website}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="text-xl font-bold text-blue-600 hover:text-blue-800 transition-colors"
+                                                    className="text-lg sm:text-xl font-bold text-blue-600 hover:text-blue-800 transition-colors"
                                                 >
                                                     {startup.name}
                                                 </a>
@@ -193,12 +176,12 @@ export default function SecureStartupPage() {
                                                     href={startup.linkedin}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="text-blue-500 hover:text-blue-700 transition-colors"
+                                                    className="text-blue-500 hover:text-blue-700"
                                                 >
                                                     <ExternalLink className="h-4 w-4" />
                                                 </a>
                                             </div>
-                                            <div className="flex items-center gap-6 text-sm">
+                                            <div className="flex items-center gap-4 text-sm flex-wrap">
                                                 <div className="flex items-center gap-1">
                                                     <DollarSign className="h-4 w-4 text-green-600" />
                                                     <span className="font-medium text-green-700">{startup.amount}</span>
@@ -210,7 +193,7 @@ export default function SecureStartupPage() {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                         <div className="flex items-center gap-2 text-sm">
                                             <MapPin className="h-4 w-4 text-red-600" />
                                             <span className="text-gray-600">{startup.headquarters}</span>
@@ -229,10 +212,10 @@ export default function SecureStartupPage() {
                     ))}
                 </div>
 
-                {/* Funding Series Guide */}
-                <section className="mt-16 mb-12">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-6">Know about various funding series used above</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Funding Guide */}
+                <section className="mt-12 mb-8">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">Funding Series Guide</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {fundingSeriesInfo.map((series, index) => (
                             <Card key={index} className="bg-white/90">
                                 <CardContent className="p-4">
@@ -245,38 +228,37 @@ export default function SecureStartupPage() {
                 </section>
 
                 {/* Footer */}
-                <footer className="mt-auto py-8 border-t border-gray-200">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
+                <footer className="mt-12 py-6 border-t border-gray-200">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div className="bg-blue-50 p-4 rounded-lg">
-                            <h4 className="font-semibold text-blue-900 mb-2">Access Information</h4>
-                            <p className="text-blue-700">
-                                Logged in as: {session?.user?.email}<br />
-                                Access Date: {new Date().toLocaleDateString()}
+                            <h4 className="font-semibold text-blue-900 mb-2">Access Info</h4>
+                            <p className="text-blue-700 text-sm">
+                                User: {session?.user?.email}
+                                <br />
+                                Date: {new Date().toLocaleDateString()}
                             </p>
                         </div>
                         <div className="bg-purple-50 p-4 rounded-lg">
-                            <h4 className="font-semibold text-purple-900 mb-2">Data Usage Policy</h4>
-                            <p className="text-purple-700">
-                                Internal use only. Distribution prohibited.
-                            </p>
+                            <h4 className="font-semibold text-purple-900 mb-2">Usage Policy</h4>
+                            <p className="text-purple-700 text-sm">Internal use only. No distribution.</p>
                         </div>
                         <div className="bg-green-50 p-4 rounded-lg">
-                            <h4 className="font-semibold text-green-900 mb-2">Database Stats</h4>
-                            <p className="text-green-700">
-                                Last Updated: {new Date().toLocaleDateString()}<br />
-                                Total Companies: {startups.length}
+                            <h4 className="font-semibold text-green-900 mb-2">Stats</h4>
+                            <p className="text-green-700 text-sm">
+                                Updated: {new Date().toLocaleDateString()}
+                                <br />
+                                Companies: {startups.length}
                             </p>
                         </div>
                     </div>
-                    <div className="mt-8 pt-8 border-t border-gray-200 text-center text-sm text-gray-500">
-                        © {new Date().getFullYear()} RUShort (a subsidiary of <a href='https://resourcesandcarrier.online/' target='_blank' rel='noreferrer' className='hover:underline'>Resources and Updates</a>) • All rights reserved
+                    <div className="mt-6 pt-6 border-t border-gray-200 text-center text-xs sm:text-sm text-gray-500">
+                        © {new Date().getFullYear()} RUShort • All rights reserved
                     </div>
                 </footer>
             </main>
         </div>
     );
 }
-
 
 const fundingSeriesInfo = [
     { name: 'Seed', description: 'Initial funding to develop idea/MVP, typically $10K-$2M' },
