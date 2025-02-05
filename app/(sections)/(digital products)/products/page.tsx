@@ -55,7 +55,7 @@ export default function ProductListingPage() {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [sortBy, setSortBy] = useState('popular');
 
-    const categories = ['All', 'Database', 'Templates', 'Guides'];
+    const categories = ['All', 'Templates', 'Guides'];
 
     const filteredProducts = products
         .filter(product =>
