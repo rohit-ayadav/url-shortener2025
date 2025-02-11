@@ -7,7 +7,7 @@ import { User } from "@/models/User";
 
 await connectDB();
 
-const ORIGIN = "rushort.site";
+const ORIGIN = "https://rushort.site";
 const CONFIG = {
   BASE_DOMAINS: ["http://localhost:3000", "https://resourcesandcarrier.online", "https://www.rushort.site"],
   SHORT_URL_LENGTH: 4,

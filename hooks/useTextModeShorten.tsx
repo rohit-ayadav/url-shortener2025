@@ -7,7 +7,7 @@ const useTextModeShorten = () => {
     const [text, setText] = useState('');
     const [processedText, setProcessedText] = useState('');
     const [loading, setLoading] = useState(false);
-    const [length, setLength] = useState(4);
+    const [length, setLength] = useState(5);
     const [prefix, setPrefix] = useState('');
     const [expirationDate, setExpirationDate] = useState<Date | null>(null);
     const [shortenedURLs, setShortenedURLs] = useState<{ original: string; shortened: string; expiresAt?: string }[]>([]);
