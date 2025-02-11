@@ -131,10 +131,16 @@ const useTextModeShorten = () => {
         }
     };
 
+    function cleanText(input: string): string {
+        const cleanedCaption = input.replace(/^.*?Caption\s*.*?\n/, "").replace(/^.*?caption\s*.*?\n/, "");
+        const finalOutput = cleanedCaption.replace(/^.*?usp=sharing\s*/s, "");
+        return finalOutput.trim();
+    }
+
     const handlePaste = async () => {
         try {
             const clipboardText = await navigator.clipboard.readText();
-            setText(clipboardText);
+            setText(cleanText(clipboardText));
         } catch (err) {
             console.error('Failed to read clipboard:', err);
         }
