@@ -2,8 +2,6 @@ import React from 'react'
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
-import exp from 'constants';
-
 
 const useTextModeShorten = () => {
     const [text, setText] = useState('');
@@ -142,7 +140,11 @@ const useTextModeShorten = () => {
             const clipboardText = await navigator.clipboard.readText();
             setText(cleanText(clipboardText));
         } catch (err) {
-            console.error('Failed to read clipboard:', err);
+            toast.toast({
+                title: 'Failed to paste',
+                description: 'Please try again',
+                variant: 'destructive',
+            });
         }
     };
 
@@ -155,7 +157,11 @@ const useTextModeShorten = () => {
         try {
             await navigator.clipboard.writeText(processedText);
         } catch (err) {
-            console.error('Failed to copy:', err);
+            toast.toast({
+                title: 'Failed to copy',
+                description: 'Please try again',
+                variant: 'destructive',
+            });
         }
     };
 
