@@ -67,9 +67,8 @@ export async function POST(request: NextRequest) {
       if (attempts >= CONFIG.MAX_ATTEMPTS) return NextResponse.json({ message: "Failed to generate unique URL", success: false }, { status: 500 });
     }
 
-    const newUrl = await Url.create({
-      originalUrl, shortenURL, createdBy: user._id, click: 0, createdAt: new Date(), expireAt: expirationDate ?? null
-    });
+    await user.handleMonthlyQuota();
+    const newUrl = await Url.create({ originalUrl, shortenURL, createdBy: user._id, click: 0, createdAt: new Date(), expireAt: expirationDate ?? null });
     const updatedUser = await User.findByIdAndUpdate(user._id, { $inc: { monthlyQuotaUsed: 1 } }, { new: true });
     console.log("\n\nUser Monthly Quota used:", updatedUser.monthlyQuotaUsed);
     console.log("Shortened URL created:", newUrl);
@@ -78,6 +77,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ message: "An error occurred", success: false, error: errorMessage }, { status: 500 });
+    return NextResponse.json({ message: errorMessage, success: false, error: errorMessage }, { status: 500 });
   }
 }

@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema({
     },
     subscriptionExpiration: {
         type: Date,
-        default: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days from now
+        default: () => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     },
     monthlyQuotaUsed: {
         type: Number,
@@ -68,7 +68,7 @@ userSchema.pre("save", async function (next) {
 
 // Function to Check Subscription Expiry
 userSchema.methods.checkSubscriptionExpiry = async function () {
-    if (this.subscriptionStatus === "premium" && this.subscriptionExpiration) {
+    if (this.subscriptionStatus === "pro" && this.subscriptionExpiration) {
         const now = new Date();
         if (this.subscriptionExpiration < now) {
             this.subscriptionStatus = "free";
@@ -91,7 +91,7 @@ userSchema.methods.comparePassword = async function (password: string) {
 userSchema.methods.handleMonthlyQuota = async function () {
     /* This function will reset the monthlyQuotaUsed to 0 if the subscriptionExpiration date is less than the current date */
     /* And it will run every time a user creates a new short URL */
-    
+
     const now = new Date();
 
     if (this.subscriptionExpiration < now && this.subscriptionStatus !== "free") {
@@ -106,6 +106,10 @@ userSchema.methods.handleMonthlyQuota = async function () {
         this.monthlyQuotaUsed = 0;
         await this.save();
     }
+
+    if (this.monthlyQuotaUsed > this.monthlyQuotaLimit)
+        throw new Error("Monthly quota exceeded.Please upgrade your plan.")
+    
 }
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
