@@ -321,10 +321,12 @@ const SingleURL = () => {
 
                     {shortenedURLs.length > 0 && (
                         <div className="space-y-3 animate-in fade-in-50 duration-500">
-                            {shortenedURLs.map((item, index) => (
+                            {[...new Map(shortenedURLs.map(item => [item.shortened, item])).values()].map((item, index) => (
                                 <ResultCard
                                     key={index}
-                                    original={item.original} shortened={item.shortened} expiresAt={item.expiresAt}
+                                    original={item.original}
+                                    shortened={item.shortened}
+                                    expiresAt={item.expiresAt || undefined}
                                 />
                             ))}
                         </div>

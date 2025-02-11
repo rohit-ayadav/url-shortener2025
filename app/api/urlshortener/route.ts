@@ -47,11 +47,11 @@ export async function POST(request: NextRequest) {
     if (alias?.includes(" ") || prefix?.includes(" "))
       return NextResponse.json({ message: "Alias or prefix must not contain whitespace", success: false }, { status: 400 });
 
-    const existingUrl = await Url.findOne({ originalUrl });
-    if (existingUrl)
-      return NextResponse.json({ message: "Already shortened", success: true, shortenURL: `${ORIGIN}/${existingUrl.shortenURL}` });
-
     const user = await User.findOne({ email });
+    const existingUrl = await Url.findOne({ originalUrl, createdBy: user?._id });
+    if (existingUrl)
+      return NextResponse.json({ message: "URL already shortened by you", success: true, shortenURL: `${ORIGIN}/${existingUrl.shortenURL}` }, { status: 200 });
+
     if (!user) return NextResponse.json({ message: "Login required", success: false }, { status: 401 });
     if (user.monthlyQuotaUsed >= user.monthlyQuotaLimit) return NextResponse.json({ message: "Monthly Quota exceeded, Kindly upgrade to premium", success: false }, { status: 403 });
 
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     console.log("\n\nUser Monthly Quota used:", updatedUser.monthlyQuotaUsed);
     console.log("Shortened URL created:", newUrl);
 
-    return NextResponse.json({ message: "Success", success: true, shortenURL: `${ORIGIN}/${shortenURL}` });
+    return NextResponse.json({ message: "URL shortened successfully", success: true, shortenURL: `${ORIGIN}/${shortenURL}` }, { status: 201 });
   } catch (error) {
     console.error("Error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";

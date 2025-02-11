@@ -39,7 +39,7 @@ export const QRCodeModal = ({ url, onClose }: QRCodeModalProps) => {
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = 'qr-code.png';
+      link.download = `qr-code-RUShort-${Date.now()}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -50,7 +50,7 @@ export const QRCodeModal = ({ url, onClose }: QRCodeModalProps) => {
   };
 
   return (
-    <Dialog open onOpenChange={() => onClose()}>
+    <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <div className="flex justify-between items-center">
@@ -80,10 +80,7 @@ export const QRCodeModal = ({ url, onClose }: QRCodeModalProps) => {
                 <p>Failed to generate QR code.</p>
                 <Button 
                   variant="outline" 
-                  onClick={() => {
-                    setIsLoading(true);
-                    setError(false);
-                  }}
+                  onClick={() => handleImageLoad()}
                   className="mt-2"
                 >
                   Retry

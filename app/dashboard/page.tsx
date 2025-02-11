@@ -66,7 +66,7 @@ const DashboardPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Daily Usage</CardTitle>
+                <CardTitle>Monthly Usage</CardTitle>
                 <CardDescription>{user.subscriptionStatus} plan limits</CardDescription>
               </CardHeader>
               <CardContent>

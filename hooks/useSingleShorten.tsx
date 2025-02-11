@@ -1,5 +1,5 @@
 import { isValidURL } from '@/utils/utils';
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useToast } from './use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { useAlias } from './useAlias';
@@ -8,9 +8,9 @@ const useSingleShorten = () => {
     const [url, setUrl] = React.useState('');
     const [loading, setLoading] = React.useState(false);
     const [length, setLength] = React.useState(4);
-    const [expirationDate, setExpirationDate] = React.useState<Date | null>(null);
+    const [expirationDate, setExpirationDate] = useState<Date | null>(null);
     const [error, setError] = React.useState('');
-    const [shortenedURLs, setShortenedURLs] = React.useState<{ original: string, shortened: string, expiresAt?: string }[]>([]);
+    const [shortenedURLs, setShortenedURLs] = useState<{ original: string, shortened: string, expiresAt: string | null }[]>([]);
     const toast = useToast();
     const [showQR, setShowQR] = React.useState(false);
     const [selectedURL, setSelectedURL] = React.useState('');
@@ -47,6 +47,7 @@ const useSingleShorten = () => {
         setSelectedURL('');
         setShowQR(false);
         setShortenedURLs([]);
+        console.log(`\n\nShortenedURLs before callAPI: ${shortenedURLs}`);
         if (!url) {
             setError('Please enter a URL');
             toast.toast({
@@ -70,7 +71,7 @@ const useSingleShorten = () => {
         try {
 
             const shortened = await callAPI(url, alias, prefix, length, expirationDate);
-            setShortenedURLs([{ original: url, shortened, expiresAt: expirationDate?.toISOString() }, ...shortenedURLs]);
+            setShortenedURLs([{ original: url, shortened, expiresAt: expirationDate ? expirationDate.toISOString() : null }, ...shortenedURLs]);
             // setUrl('');
             setError('');
         } catch (err: any) {
@@ -82,12 +83,13 @@ const useSingleShorten = () => {
             });
         } finally {
             setLoading(false);
+            console.log(`\n\nShortenedURLs after callAPI: ${shortenedURLs}`);
         }
     };
 
     const callAPI = async (url: string, alias: string, prefix: string, length: number, expirationDate: Date | null) => {
         try {
-            console.log(`\n\ncallAPI Called with: ${url}, ${alias}, ${prefix}, ${length}, ${expirationDate}`);
+            // console.log(`\n\ncallAPI Called with: ${url}, ${alias}, ${prefix}, ${length}, ${expirationDate}`);
             const response = await fetch('/api/urlshortener', {
                 method: 'POST',
                 headers: {

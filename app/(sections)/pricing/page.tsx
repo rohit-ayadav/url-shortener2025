@@ -45,7 +45,7 @@ const PricingPage = () => {
         {
             id: 'basic',
             name: 'Basic',
-            price: 1,
+            price: 99,
             duration: 'month',
             buttonText: 'Get Started',
             buttonVariant: 'outline',
