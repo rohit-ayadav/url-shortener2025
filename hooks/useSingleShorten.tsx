@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { useToast } from './use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { useAlias } from './useAlias';
+import { getSubscriptionStatus } from '@/action/getSubscriptionStatus';
 
 const useSingleShorten = () => {
     const [url, setUrl] = React.useState('');
@@ -15,6 +16,22 @@ const useSingleShorten = () => {
     const [showQR, setShowQR] = React.useState(false);
     const [selectedURL, setSelectedURL] = React.useState('');
     const { alias, setAlias, aliasError, setAliasError, prefix, setPrefix } = useAlias();
+    const [subscriptionStatus, setSubscriptionStatus] = useState('free'); // free basic pro enterprise
+
+    useEffect(() => {
+        const fetchSubscriptionStatus = async () => {
+            const response = await getSubscriptionStatus();
+            if (response.success) {
+                setSubscriptionStatus(response.subscriptionStatus);
+            }
+        };
+        fetchSubscriptionStatus();
+        if (subscriptionStatus === 'free') {
+            const sixMonthsFromNow = new Date();
+            sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+            setExpirationDate(sixMonthsFromNow);
+        }
+    }, []);
 
     useEffect(() => {
         const TotalLength = alias.length + prefix.length + length;
@@ -164,6 +181,17 @@ const useSingleShorten = () => {
             return;
         }
         const newDate = new Date(dateValue);
+        const sixMonthsFromNow = new Date();
+        sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+        if (subscriptionStatus === 'free' && newDate > sixMonthsFromNow) {
+            toast.toast({
+                title: 'Maximum expiration date',
+                description: 'Link expiration date cannot be more than 6 months for free users',
+                variant: 'destructive'
+            });
+            setExpirationDate(sixMonthsFromNow);
+            return;
+        }
         newDate.setHours(23, 59, 59, 999);
         setExpirationDate(newDate);
     };
@@ -192,13 +220,30 @@ const useSingleShorten = () => {
                 expiryDate.setMonth(now.getMonth() + 6);
                 break;
             case '1year':
-                expiryDate.setFullYear(now.getFullYear() + 1);
+                if (subscriptionStatus === 'free') {
+                    toast.toast({
+                        title: 'Maximum expiration date',
+                        description: 'Link expiration date cannot be more than 6 months for free users',
+                        variant: 'destructive'
+                    });
+                    expiryDate.setMonth(now.getMonth() + 6);
+                } else {
+                    expiryDate.setFullYear(now.getFullYear() + 1);
+                }
                 break;
             default:
                 expiryDate = null;
                 break;
         }
 
+        if (subscriptionStatus === 'free' && expiryDate && expiryDate > new Date(now.setMonth(now.getMonth() + 6))) {
+            toast.toast({
+                title: 'Maximum expiration date',
+                description: 'Link expiration date cannot be more than 6 months for free users',
+                variant: 'destructive'
+            });
+            expiryDate = new Date(now.setMonth(now.getMonth() + 6));
+        }
         if (expiryDate) {
             expiryDate.setHours(23, 59, 59, 999);
         }

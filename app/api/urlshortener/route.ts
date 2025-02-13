@@ -9,7 +9,7 @@ await connectDB();
 
 const ORIGIN = "https://rushort.site";
 const CONFIG = {
-  BASE_DOMAINS: ["http://localhost:3000", "https://resourcesandcarrier.online", "https://www.rushort.site"],
+  BASE_DOMAINS: ["http://localhost:3000", "https://resourcesandcarrier.online", "https://www.resourcesandcarrier.online", "https://www.rushort.site", "https://rushort.site"],
   SHORT_URL_LENGTH: 4,
   MAX_ATTEMPTS: 10
 } as const;

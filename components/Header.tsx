@@ -61,7 +61,7 @@ const Header = () => {
                     {/* Logo */}
                     <div className="flex items-center gap-2" onClick={() => router.push('/')}>
                         <LinkIcon className="h-6 w-6 text-blue-600" />
-                        <span className="text-xl font-bold">RUShort</span>
+                        <span className="text-xl font-bold hover:text-blue-600 cursor-pointer select-none">Rushort</span>
                     </div>
 
                     {/* Desktop Navigation */}

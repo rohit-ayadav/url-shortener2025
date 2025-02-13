@@ -113,7 +113,7 @@ const useTextModeShorten = () => {
             shortened.forEach(({ original, shortened }) => {
                 newText = newText.replace(original, shortened);
             });
-            // await navigator.clipboard.writeText(newText);
+            await navigator.clipboard.writeText(newText);
             console.log(`\n\nThe text has been processed`);
             toast.toast({
                 title: 'Success',

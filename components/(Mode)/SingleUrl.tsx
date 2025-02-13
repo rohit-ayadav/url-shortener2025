@@ -12,38 +12,25 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import useSingleShorten from '@/hooks/useSingleShorten';
 import { ResultCard } from '@/components/ResultCard';
 import QRCodeModal from '@/components/QRCodeModal';
-import { FaCross, FaPaste } from 'react-icons/fa';
+import { FaPaste } from 'react-icons/fa';
+import { getSubscriptionStatus } from '@/action/getSubscriptionStatus';
 
 const SingleURL = () => {
     const [expiryType, setExpiryType] = useState<'calendar' | 'duration'>('duration');
     const [showAdvanced, setShowAdvanced] = useState(false);
+    const [subscriptionStatus, setSubscriptionStatus] = useState('free'); // free basic pro enterprise
 
-    const {
-        url,
-        alias,
-        aliasError,
-        loading,
-        onUrlChange,
-        onAliasChange,
-        onShorten,
-        length,
-        onLengthChange,
-        prefix,
-        onPrefixChange,
-        expirationDate,
-        onExpirationDateChange,
-        error,
-        shortenedURLs,
-        showQR,
-        selectedURL,
-        setShowQR,
-        isUrlValid,
-        minDate,
-        maxDate,
-        formatDateForInput,
-        handleDateChange,
-        handleDurationChange
-    } = useSingleShorten();
+    useEffect(() => {
+        const fetchSubscriptionStatus = async () => {
+            const response = await getSubscriptionStatus();
+            if (response.success) {
+                setSubscriptionStatus(response.subscriptionStatus);
+            }
+        };
+        fetchSubscriptionStatus();
+    }, []);
+
+    const { url, alias, aliasError, loading, onUrlChange, onAliasChange, onShorten, length, onLengthChange, prefix, onPrefixChange, error, shortenedURLs, expirationDate, onExpirationDateChange, isUrlValid, selectedURL, setShowQR, handleDurationChange, handleDateChange, formatDateForInput, minDate, maxDate, showQR } = useSingleShorten();
 
     const handleSubmit = (e: React.FormEvent): void => {
         e.preventDefault();
@@ -332,7 +319,7 @@ const SingleURL = () => {
                         </div>
                     )}
 
-                    {/* Submit Button with keyboard shortcut hint */}
+                    {/* Submit Button */}
                     <div className="space-y-2">
                         <Button
                             type="submit"
