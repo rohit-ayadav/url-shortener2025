@@ -24,9 +24,8 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const initializeDashboard = async () => {
-      const userData = await fetchUrls();
+      const [userData, userAnalytics] = await Promise.all([fetchUrls(), getClickAnalytics(user?.email)]);
       setUser(userData);
-      const userAnalytics = await getClickAnalytics(userData?.email);
       setAnalytics(userAnalytics);
     };
     initializeDashboard();
