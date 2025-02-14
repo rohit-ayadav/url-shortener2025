@@ -1,15 +1,17 @@
 "use server";
+import { getSessionAtHome } from "@/app/api/auth/[...nextauth]/options";
 import { Url } from "@/models/urlShortener";
 import { User } from "@/models/User";
 import { connectDB } from "@/utils/db";
 
 await connectDB();
 
-async function getClickAnalytics(email: string | undefined) {
-    if (!email) {
-        console.log(`\n\nEmail is required\n\n`);
-        return;
+async function getClickAnalytics() {
+    const session = await getSessionAtHome();
+    if (!session) {
+        throw new Error("User not authenticated");
     }
+    const email = session.user?.email;
     try {
         // Return Total Shorten by user and total click 
         const user = await User.findOne({ email });

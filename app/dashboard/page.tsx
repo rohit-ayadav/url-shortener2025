@@ -14,25 +14,55 @@ import { AnalyticsCard } from './components/AnalyticsCard';
 import { SubscriptionCard } from './components/SubscriptionCard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Loading from '@/lib/Loading';
+import { useToast } from '@/hooks/use-toast';
 
 const DashboardPage = () => {
   const [showUrlShortener, setShowUrlShortener] = useState(false);
   const [user, setUser] = useState<User>();
-  const [analytics, setAnalytics] = useState<Analytics>();
+  const [analytics, setAnalytics] = useState<Analytics>(
+    {
+      totalShorten: 0,
+      totalClick: 0,
+      subscriptionExpiration: null,
+      subscriptionStatus: 'free',
+      monthlyQuotaLimit: 0,
+      monthlyQuotaUsed: 0,
+    }
+  );
   const router = useRouter();
+  const toast = useToast();
   const { urls, loading, fetchUrls } = useUrlManagement();
 
   useEffect(() => {
     const initializeDashboard = async () => {
-      const [userData, userAnalytics] = await Promise.all([fetchUrls(), getClickAnalytics(user?.email)]);
-      setUser(userData);
-      setAnalytics(userAnalytics);
+      try {
+        const [userData, userAnalytics] = await Promise.all([fetchUrls(), getClickAnalytics()]);
+        setUser(userData);
+        if (userAnalytics) {
+          setAnalytics(userAnalytics);
+        }
+
+      } catch (err) {
+        toast.toast({
+          title: 'Error',
+          description: 'Failed to load dashboard data',
+          variant: 'destructive',
+        })
+        console.log(err);
+      }
     };
     initializeDashboard();
   }, []);
 
-  if (loading || !user || !analytics) {
+  if (loading) {
     return <Loading text="Preparing your dashboard..." />;
+  }
+
+  if (!user) {
+    return <div className='flex flex-col items-center justify-center h-full space-y-4'>
+      <h1 className="text-3xl font-bold text-center">Something went wrong</h1>
+      <p className="text-center">Please try again later</p>
+    </div>
   }
 
   return (

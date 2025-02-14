@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { FaGoogle } from "react-icons/fa";
 import useAuth from '@/hooks/useAuth';
 import { signIn } from 'next-auth/react';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { useSearchParams } from 'next/navigation';
 
 const AuthPages = () => {
@@ -256,6 +256,7 @@ const AuthPages = () => {
                                     type="button"
                                     variant="link"
                                     className="w-full text-blue-600 hover:text-blue-700"
+                                    onClick={() => toast.success('Feature coming soon!')}
                                 >
                                     Forgot your password?
                                 </Button>
