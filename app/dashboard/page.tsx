@@ -58,12 +58,13 @@ const DashboardPage = () => {
     return <Loading text="Preparing your dashboard..." />;
   }
 
-  if (!user) {
-    return <div className='flex flex-col items-center justify-center h-full space-y-4'>
-      <h1 className="text-3xl font-bold text-center">Something went wrong</h1>
-      <p className="text-center">Please try again later</p>
-    </div>
-  }
+  // if (!user && !loading) {
+  //   return <div className='flex flex-col items-center justify-center h-full space-y-4'>
+  //     <h1 className="text-3xl font-bold text-center">Something went wrong</h1>
+  //     <p className="text-center">Please try again later</p>
+  //   </div>
+  // }
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
