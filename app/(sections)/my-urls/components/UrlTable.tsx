@@ -80,7 +80,9 @@ export const UrlTable = ({ urls, selectedUrls, onSelectUrl, onEdit, onDelete, on
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-blue-600 font-medium">{url.shortUrl}</span>
+                                            <span className="text-blue-600 font-medium cursor-pointer"
+                                                onClick={() => window.open(formatUrl(url.shortUrl), '_blank')}
+                                            >{url.shortUrl}</span>
                                             <Button
                                                 variant="ghost"
                                                 size="sm"

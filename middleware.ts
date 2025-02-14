@@ -17,7 +17,7 @@ export async function middleware(req: NextRequest) {
     }
 
     if (!token && config.matcher.includes(url.pathname)) {
-        return NextResponse.redirect(new URL("/auth", req.url));
+        return NextResponse.redirect(new URL("/auth?redirect=" + url.pathname, req.url));
     }
 
     return NextResponse.next();

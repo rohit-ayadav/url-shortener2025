@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { CalendarIcon, Search } from 'lucide-react';
+import { CalendarIcon, Cross, Search, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { PopoverAnchor } from '@radix-ui/react-popover';
 
 interface UrlFiltersProps {
     searchTerm: string;
@@ -36,10 +37,14 @@ const UrlFilters = ({ searchTerm, filterStatus, selectedDate, sortBy, onFilterCh
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">All Status</SelectItem>
-                            <SelectItem value="active">Active</SelectItem>
-                            <SelectItem value="expired">Expired</SelectItem>
-                            <SelectItem value="archived">Archived</SelectItem>
+                            <SelectItem className='hover:bg-gray-100 cursor-pointer'
+                                value="all">All Status</SelectItem>
+                            <SelectItem className='hover:bg-gray-100 cursor-pointer'
+                                value="active">Active</SelectItem>
+                            <SelectItem className='hover:bg-gray-100 cursor-pointer'
+                                value="expired">Expired</SelectItem>
+                            <SelectItem className='hover:bg-gray-100 cursor-pointer'
+                                value="archived">Archived</SelectItem>
                         </SelectContent>
                     </Select>
                     <Select value={sortBy} onValueChange={(value) => onFilterChange('sortBy', value)}>
@@ -47,34 +52,50 @@ const UrlFilters = ({ searchTerm, filterStatus, selectedDate, sortBy, onFilterCh
                             <SelectValue placeholder="Sort by" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="created_desc">Newest First</SelectItem>
-                            <SelectItem value="created_asc">Oldest First</SelectItem>
-                            <SelectItem value="clicks_desc">Most Clicked</SelectItem>
-                            <SelectItem value="expires_asc">Expiring Soon</SelectItem>
+                            <SelectItem className='cursor-pointer' value="created_desc">Newest First</SelectItem>
+                            <SelectItem className='cursor-pointer' value="created_asc">Oldest First</SelectItem>
+                            <SelectItem className='cursor-pointer' value="clicks_desc">Most Clicked</SelectItem>
+                            <SelectItem className='cursor-pointer' value="expires_asc">Expiring Soon</SelectItem>
                         </SelectContent>
                     </Select>
                     <Popover>
-                        <PopoverTrigger asChild>
-                            <Button variant="outline" className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !selectedDate && "text-muted-foreground"
-                            )}>
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
-                            </Button>
-                        </PopoverTrigger>
+                        <div className="relative">
+
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !selectedDate && "text-muted-foreground"
+                                )}>
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            {selectedDate && (
+                                <Button
+                                    variant="ghost"
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                                    onClick={() => onFilterChange('selectedDate', '')}
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            )}
+                        </div>
+                        <PopoverAnchor />
                         <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                                 mode="single"
                                 selected={selectedDate || undefined}
-                                onSelect={(date) => date && onFilterChange('selectedDate', date)}
+                                onSelect={(date) => {
+                                    date && onFilterChange('selectedDate', date)
+                                }}
                                 initialFocus
                             />
                         </PopoverContent>
+
                     </Popover>
                 </div>
             </CardContent>
-        </Card>
+        </Card >
     );
 };
 

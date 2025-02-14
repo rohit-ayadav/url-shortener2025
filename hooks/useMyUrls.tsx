@@ -1,10 +1,10 @@
+"use client";
 import React, { useEffect, useState } from 'react';
 import { User, UrlData } from '@/types/types';
 import { ObjectId, set } from 'mongoose';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { url } from 'inspector';
 
 const sortOptions = [
     { value: 'created_desc', label: 'Newest First' },
@@ -12,6 +12,7 @@ const sortOptions = [
     { value: 'clicks_desc', label: 'Most Clicked' },
     { value: 'expires_asc', label: 'Expiring Soon' },
 ];
+
 const UrlContext = () => {
     const [user, setUser] = useState<User | null>(null);
     const [urls, setUrls] = useState<UrlData[]>([]);
@@ -33,14 +34,6 @@ const UrlContext = () => {
     const [filteredUrls, setFilteredUrls] = useState<UrlData[]>([]);
     const { toast } = useToast();
 
-    /*
-     <SelectContent>
-                            <SelectItem value="created_desc">Newest First</SelectItem>
-                            <SelectItem value="created_asc">Oldest First</SelectItem>
-                            <SelectItem value="clicks_desc">Most Clicked</SelectItem>
-                            <SelectItem value="expires_asc">Expiring Soon</SelectItem>
-                        </SelectContent>
-                        */
     const fetchUrls = async () => {
         setLoading(true);
         try {
@@ -95,9 +88,31 @@ const UrlContext = () => {
                     format(url.created, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
                 );
             }
+            // Apply sort filter
+            switch (sortBy) {
+                case 'created_desc':
+                    filtered.sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
+                    break;
+                case 'created_asc':
+                    filtered.sort((a, b) => new Date(a.created).getTime() - new Date(b.created).getTime());
+                    break;
+                case 'clicks_desc':
+                    filtered.sort((a, b) => b.clicks - a.clicks);
+                    break;
+                case 'expires_asc':
+                    filtered.sort((a, b) => {
+                        if (!a.expireAt) return 1;
+                        if (!b.expireAt) return -1;
+                        return new Date(a.expireAt).getTime() - new Date(b.expireAt).getTime();
+                    });
+                    break;
+                default:
+                    break;
+            }
+
             setFilteredUrls(filtered);
         }
-    }, [urls, searchTerm, filterStatus, selectedDate]);
+    }, [urls, searchTerm, filterStatus, selectedDate, sortBy]);
 
 
     const handleDelete = async (ids: ObjectId[]) => {
@@ -228,6 +243,7 @@ const UrlContext = () => {
     };
 
     const handleFilterChange = (sortBy: string, value: string | Date) => {
+        console.log(`Filter changed request: ${sortBy} - ${value}`);
         switch (sortBy) {
             case 'searchTerm':
                 setSearchTerm(value as string);
