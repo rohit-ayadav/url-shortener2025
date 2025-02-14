@@ -30,6 +30,7 @@ const AuthPages = () => {
         handleSendOtp,
         showOtpInput,
         otpSending,
+        handleGithubAuth,
     } = useAuth();
 
     const params = useSearchParams();
@@ -70,7 +71,7 @@ const AuthPages = () => {
                                     Google
                                 </Button>
                                 <Button
-                                    onClick={async () => await signIn('github', { callbackUrl: `/${redirect ? redirect : 'dashboard'}` })}
+                                    onClick={handleGithubAuth}
                                     variant="outline"
                                     type="button"
                                     className="w-full border-blue-200 hover:bg-blue-50"

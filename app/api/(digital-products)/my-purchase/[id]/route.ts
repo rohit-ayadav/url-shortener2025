@@ -3,7 +3,7 @@ import { connectDB } from "@/utils/db";
 import { User } from "@/models/User";
 import Product from "@/models/Product";
 import Payment from "@/models/Payment";
-import { getSessionAtHome } from "@/auth";
+import { getSessionAtHome } from "@/app/api/auth/[...nextauth]/options";
 import startupData from '@/app/api/products/startupList1.json';
 
 await connectDB();
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ success: false, message: "Product not found" }, { status: 404 });
         }
 
-        const payment = payments.find((p) => p.paymentFor === id);  
+        const payment = payments.find((p) => p.paymentFor === id);
 
         if (!payment) {
             return NextResponse.json({ success: false, message: "Product not purchased" }, { status: 404 });

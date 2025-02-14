@@ -1,5 +1,5 @@
 "use server";
-import { getSessionAtHome } from "@/auth";
+import { getSessionAtHome } from "@/app/api/auth/[...nextauth]/options";
 import { User } from "@/models/User";
 import Payment from "@/models/Payment";
 import startupData from '@/app/api/products/startupList1.json';

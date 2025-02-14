@@ -2,7 +2,7 @@
 "use server";
 import { connectDB } from "@/utils/db"
 import { User } from "@/models/User"
-import { getSessionAtHome } from "@/auth";
+import { getSessionAtHome } from "@/app/api/auth/[...nextauth]/options";
 
 await connectDB();
 

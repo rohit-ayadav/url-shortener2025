@@ -1,9 +1,9 @@
 const CACHE_NAME = 'url-shortener-v1';
 const urlsToCache = [
     '/',
-    '/manifest.json',
-    '/icon-192x192.png',
-    '/icon-512x512.png',
+    // '/manifest.json',
+    // '/icon-192x192.png',
+    // '/icon-512x512.png',
     '/offline.html',
 ];
 
@@ -19,36 +19,36 @@ self.addEventListener('install', event => {
     );
 });
 
-// Cache and return requests
-self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                // Cache hit - return response
-                if (response) {
-                    return response;
-                }
+// // Cache and return requests
+// self.addEventListener('fetch', event => {
+//     event.respondWith(
+//         caches.match(event.request)
+//             .then(response => {
+//                 // Cache hit - return response
+//                 if (response) {
+//                     return response;
+//                 }
 
-                return fetch(event.request)
-                    .then(response => {
-                        // Check if we received a valid response
-                        if (!response || response.status !== 200 || response.type !== 'basic') {
-                            return response;
-                        }
+//                 return fetch(event.request)
+//                     .then(response => {
+//                         // Check if we received a valid response
+//                         if (!response || response.status !== 200 || response.type !== 'basic') {
+//                             return response;
+//                         }
 
-                        const responseToCache = response.clone();
+//                         const responseToCache = response.clone();
 
-                        caches.open(CACHE_NAME)
-                            .then(cache => {
-                                cache.put(event.request, responseToCache);
-                            });
+//                         caches.open(CACHE_NAME)
+//                             // .then(cache => {
+//                             //     cache.put(event.request, responseToCache);
+//                             // });
 
-                        return response;
-                    });
-            })
-            .catch(() => caches.match('/offline.html'))
-    );
-});
+//                         return response;
+//                     });
+//             })
+//             .catch(() => caches.match('/offline.html'))
+//     );
+// });
 
 // Update a service worker
 self.addEventListener('activate', event => {

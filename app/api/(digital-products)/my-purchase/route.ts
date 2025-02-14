@@ -3,7 +3,7 @@ import { connectDB } from "@/utils/db";
 import { User } from "@/models/User";
 import Product from "@/models/Product";
 import Payment from "@/models/Payment";
-import { getSessionAtHome } from "@/auth";
+import { getSessionAtHome } from "@/app/api/auth/[...nextauth]/options";
 
 await connectDB();
 

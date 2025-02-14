@@ -36,6 +36,13 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // const jsonLd = {
+  //   "@context": "https://schema.org",
+  //   "@type": "Organization",
+  //   name: "URL Shortener",
+  //   url: "https://url-shortener.vercel.app",
+  //   logo: "https://url-shortener.vercel.app/logo.svg",
+  // };
   return (
     <html lang="en">
       <body

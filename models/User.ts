@@ -82,7 +82,7 @@ userSchema.methods.checkSubscriptionExpiry = async function () {
 // Compare Password for Login
 userSchema.methods.comparePassword = async function (password: string) {
     if (!this.password) {
-        throw new Error("No password set for this user");
+        throw new Error("Kindly login using your social account.");
     }
     return bcrypt.compare(password, this.password);
 };

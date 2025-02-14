@@ -8,9 +8,19 @@ import { ArrowRight, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SingleURL from '@/components/(Mode)/SingleUrl';
 import { useRouter } from 'next/navigation';
+import { getSession } from 'next-auth/react';
 
 const HomePage = () => {
   const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+  React.useEffect(() => {
+    getSession().then((session) => {
+      if (session) {
+        setIsLoggedIn(true);
+      }
+    });
+  }, []);
+
   const scrollToShortener = () => {
     const shortenerSection = document.getElementById('shortener-section');
     if (shortenerSection) {
@@ -74,7 +84,7 @@ const HomePage = () => {
                 <Button
                   size="lg"
                   className="bg-white text-blue-600 hover:bg-blue-50 transition-all duration-200 text-lg px-8 group"
-                  onClick={scrollToShortener}
+                  onClick={isLoggedIn ? scrollToShortener : () => router.push('/auth?redirect=/')}
                 >
                   Get Started
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />

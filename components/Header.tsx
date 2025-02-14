@@ -26,16 +26,12 @@ const Header = () => {
     const { data: session, status } = useSession();
 
     useEffect(() => {
-        const checkSession = async (): Promise<void> => {
-            const session = await getSession();
-            if (session) {
-                setIsLoggedin(true);
-                setName(session.user?.name ?? '');
-                setEmail(session.user?.email ?? '');
-                setAvatar(session.user?.image ?? '');
-            }
-        };
-        if (status !== 'loading') checkSession();
+        if (status === 'authenticated') {
+            setIsLoggedin(true);
+            setName(session.user?.name ?? '');
+            setEmail(session.user?.email ?? '');
+            setAvatar(session.user?.image ?? '');
+        }
     }, [session, status]);
 
     const isAuthenticated = isLoggedin;

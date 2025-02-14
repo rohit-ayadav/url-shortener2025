@@ -5,6 +5,7 @@ import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { set } from 'mongoose';
 
 interface AuthFormData {
     email: string;
@@ -35,18 +36,16 @@ const useAuth = () => {
     const [otpSending, setOtpSending] = React.useState(false);
 
     useEffect(() => {
-        console.log('\nUseAuth\nSession:', session);
-        console.log('Status:', status);
-        if (session && status === 'authenticated') {
+        if (session && status === 'authenticated' && !error) {
             toast.toast({
                 title: 'You are already logged in',
                 description: `Redirecting to ${redirect || 'dashboard'}...`,
                 duration: 5000,
                 variant: 'default',
-            })
+            });
             router.push(`${redirect || 'dashboard'}`);
         }
-    }, [session, status]);
+    }, [session, status, error]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -72,6 +71,12 @@ const useAuth = () => {
             if (isLogin) {
                 console.log(`Signing in with email: ${formData.email} and password: ${formData.password}`);
                 try {
+                    console.log(`Sending sign in request
+                        email: ${formData.email}
+                        password: ${formData.password}
+                        redirect: false
+                    `);
+
                     const result = await signIn('credentials', {
                         email: formData.email,
                         password: formData.password,
@@ -86,7 +91,13 @@ const useAuth = () => {
                         });
                         setSuccess('Sign in successful');
                         if (result.ok) {
-                            router.push(`/${redirect || 'dashboard'}`);
+                            // router.push(`/${redirect || 'dashboard'}`);
+                            toast.toast({
+                                title: 'Log in successful',
+                                description: `Redirecting to ${redirect || 'dashboard'}...`,
+                                duration: 5000,
+                                variant: 'default',
+                            })
                         } else {
                             throw new Error(result.error || 'Authentication failed');
                         }
@@ -96,6 +107,11 @@ const useAuth = () => {
                             'CredentialsSignin': 'Invalid credentials',
                             'EmailVerification': 'Please verify your email address',
                         };
+                        toast.toast({
+                            title: 'Error',
+                            description: errorMessages[result.error] || result.error,
+                            variant: 'destructive',
+                        });
                         console.log('Error:', errorMessages[result.error] || result.error);
                         throw new Error(errorMessages[result.error] || result.error);
                     }
@@ -203,6 +219,11 @@ const useAuth = () => {
         }
     };
 
+    const handleGithubAuth = async () => {
+        setError(null);
+        await signIn('github');
+    };
+
     return {
         isLogin,
         setIsLogin,
@@ -220,6 +241,7 @@ const useAuth = () => {
         handleSendOtp,
         showOtpInput,
         otpSending,
+        handleGithubAuth
     };
 }
 
