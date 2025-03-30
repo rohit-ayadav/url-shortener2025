@@ -1,7 +1,8 @@
 {
-    "name": "URL Shortener",
-    "short_name": "URLShort",
-    "description": "A powerful URL shortening tool with multiple shortening options",
+    "name": "RU Short | URL Shortener",
+    "short_name": "RU Short",
+    "version": "1.0.0",
+    "description": "A URL Shortener app that allows users to shorten long URLs and track their usage. having 3 features: Single URL Shortening, Bulk URL Shortening, and Text based URL Shortening. It also includes a dashboard for users to manage their shortened URLs and view analytics.",
     "lang": "en",
     "start_url": "/",
     "display": "standalone",
@@ -24,6 +25,12 @@
     "categories": [
         "URL Shortener",
         "Shorten URL",
-        "URL Shortening"
+        "URL Shortening",
+        "URL Shortener App",
+        "URL Shortener Tool",
+        "URL Shortener Service",
+        "URL Shortener Website",
+        "URL Shortener Platform",
+        "URL Shortener Software"
     ]
 }
