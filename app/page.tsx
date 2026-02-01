@@ -36,10 +36,10 @@ const HomePage = () => {
   };
 
   const stats = [
-    { label: 'Links Shortened', value: '10M+', description: 'and counting' },
-    { label: 'Active Users', value: '50K+', description: 'worldwide' },
+    { label: 'Links Shortened', value: '60K+', description: 'and counting' },
+    { label: 'Active Users', value: '500+', description: 'worldwide' },
     { label: 'Success Rate', value: '99.9%', description: 'uptime' },
-    { label: 'Countries', value: '190+', description: 'reached' }
+    { label: 'Countries', value: '5+', description: 'reached' }
   ];
 
   return (

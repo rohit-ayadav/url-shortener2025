@@ -30,7 +30,6 @@ export const config = {
         "/settings",
         "/bulk-shortener",
         "/api/:path*", // Match all API routes
-        "/",
         "/auth",
         // "/auth?signup",
     ],
