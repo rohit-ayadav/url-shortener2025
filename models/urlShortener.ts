@@ -36,7 +36,7 @@ const urlShortenerSchema: Schema = new mongoose.Schema(
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: false,
     },
     lastClicked: {
       type: Date,
