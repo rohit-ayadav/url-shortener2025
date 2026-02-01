@@ -103,7 +103,7 @@ const MyPurchasePage = () => {
                             No Purchases Yet
                         </h3>
                         <p className="text-gray-500">
-                            You haven't made any purchases yet. Check out our <a href="/products" className="text-blue-600 hover:underline">products</a> to get started!
+                            You haven't made any purchases yet.
                         </p>
                     </CardContent>
                 </Card>
